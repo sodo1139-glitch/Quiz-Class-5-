@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚔️ دول المحور - مسابقة تاريخية</title>
+<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@300;400;600;700;900&display=swap');
+
+:root {
+  --gold: #c9a84c;
+  --gold-light: #f0d080;
+  --dark: #0c0b09;
+  --dark2: #181410;
+  --dark3: #231c12;
+  --red: #7a1515;
+  --red-bright: #cc2222;
+  --cream: #f4e8d0;
+  --tan: #b09060;
+  --glow: rgba(201,168,76,0.3);
+  --green: #2d7a3a;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--dark);
+  color: var(--cream);
+  font-family: 'Cairo', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content:'';
+  position:fixed; inset:0; pointer-events:none; z-index:0;
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 0%, rgba(122,21,21,0.2) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 40% at 90% 90%, rgba(201,168,76,0.1) 0%, transparent 55%),
+    repeating-linear-gradient(0deg, transparent, transparent 80px, rgba(201,168,76,0.02) 80px, rgba(201,168,76,0.02) 81px),
+    repeating-linear-gradient(90deg, transparent, transparent 80px, rgba(201,168,76,0.02) 80px, rgba(201,168,76,0.02) 81px);
+}
+
+/* SCREENS */
+.screen { display:none; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; padding:24px 16px; position:relative; z-index:1; animation:fadeUp .45s ease; }
+.screen.active { display:flex; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+
+/* TITLE */
+.game-title {
+  font-family:'Amiri',serif;
+  font-size: clamp(2rem,7vw,4rem);
+  font-weight:700;
+  background: linear-gradient(135deg, #f0d080, #c9a84c, #8a6010);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  text-align:center; line-height:1.2;
+}
+.subtitle { font-size:.82rem; color:var(--tan); letter-spacing:5px; text-transform:uppercase; margin-top:6px; text-align:center; }
+.divider { width:180px; height:2px; background:linear-gradient(90deg,transparent,var(--gold),transparent); margin:18px auto; }
+
+/* CARD */
+.card {
+  background:linear-gradient(150deg, rgba(35,28,18,.97), rgba(24,20,16,.99));
+  border:1px solid rgba(201,168,76,.28);
+  border-radius:4px;
+  padding:28px 24px;
+  width:100%; max-width:600px;
+  position:relative;
+  box-shadow:0 10px 50px rgba(0,0,0,.7), inset 0 1px 0 rgba(201,168,76,.12);
+}
+.card::before,.card::after { content:''; position:absolute; width:18px; height:18px; border-color:var(--gold); border-style:solid; opacity:.5; }
+.card::before { top:7px; right:7px; border-width:2px 2px 0 0; }
+.card::after  { bottom:7px; left:7px; border-width:0 0 2px 2px; }
+
+/* BUTTONS */
+.btn {
+  background:linear-gradient(135deg,#3a2a10,#221808);
+  border:1px solid var(--gold); color:var(--gold-light);
+  font-family:'Cairo',sans-serif; font-size:1rem; font-weight:700;
+  padding:13px 30px; border-radius:3px; cursor:pointer;
+  transition:all .22s; letter-spacing:1px; position:relative; overflow:hidden;
+  display:inline-block;
+}
+.btn:hover { box-shadow:0 0 28px var(--glow),0 4px 16px rgba(0,0,0,.4); transform:translateY(-2px); }
+.btn:active { transform:translateY(0); }
+.btn:disabled { opacity:.4; cursor:not-allowed; transform:none; box-shadow:none; }
+.btn-red { border-color:var(--red-bright); color:#ff9090; background:linear-gradient(135deg,#2a0808,#180404); }
+.btn-red:hover { box-shadow:0 0 28px rgba(204,34,34,.4); }
+.btn-full { width:100%; text-align:center; }
+
+/* INPUTS */
+.inp {
+  width:100%; background:rgba(8,6,3,.7); border:1px solid rgba(201,168,76,.3);
+  border-radius:3px; color:var(--cream); font-family:'Cairo',sans-serif;
+  font-size:1.05rem; padding:13px 15px; outline:none; transition:.2s; text-align:right;
+}
+.inp:focus { border-color:var(--gold); box-shadow:0 0 14px rgba(201,168,76,.18); }
+.inp::placeholder { color:rgba(176,144,96,.4); }
+
+/* LABEL */
+.lbl { font-size:.78rem; color:var(--tan); letter-spacing:2px; text-transform:uppercase; margin-bottom:6px; display:block; }
+
+/* QR */
+#qr-wrap { background:#fff; padding:14px; border-radius:4px; display:inline-block; border:3px solid var(--gold); box-shadow:0 0 30px rgba(201,168,76,.25); }
+
+/* ROOM CODE */
+.room-code { font-family:'Amiri',serif; font-size:3.2rem; color:var(--gold-light); letter-spacing:14px; text-align:center; text-shadow:0 0 20px var(--glow); }
+
+/* PLAYER ITEM */
+.player-item { display:flex; align-items:center; gap:10px; padding:9px 13px; background:rgba(201,168,76,.05); border:1px solid rgba(201,168,76,.13); border-radius:3px; margin-bottom:7px; animation:slideIn .3s ease; }
+@keyframes slideIn { from{opacity:0;transform:translateX(16px)} to{opacity:1;transform:translateX(0)} }
+.avatar { width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,var(--red),var(--dark3)); border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; font-size:.95rem; font-weight:700; color:var(--gold-light); flex-shrink:0; }
+
+/* PROGRESS */
+.prog-bar { width:100%; height:5px; background:rgba(201,168,76,.12); border-radius:3px; overflow:hidden; margin-bottom:18px; }
+.prog-fill { height:100%; background:linear-gradient(90deg,var(--gold),var(--gold-light)); transition:width .4s; border-radius:3px; }
+
+/* TIMER */
+.timer-wrap { position:relative; width:76px; height:76px; margin:0 auto 14px; }
+.timer-wrap svg { transform:rotate(-90deg); }
+circle { fill:none; stroke-width:6; }
+.tc-bg { stroke:rgba(201,168,76,.13); }
+.tc-fill { stroke:var(--gold); stroke-dasharray:214; stroke-dashoffset:0; transition:stroke-dashoffset 1s linear,stroke .5s; stroke-linecap:round; }
+.timer-num { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'Amiri',serif; font-size:1.55rem; font-weight:700; color:var(--gold-light); }
+
+/* OPTIONS */
+.opts { display:grid; grid-template-columns:1fr 1fr; gap:11px; }
+.opt { background:rgba(18,14,8,.8); border:1px solid rgba(201,168,76,.22); color:var(--cream); font-family:'Cairo',sans-serif; font-size:.9rem; font-weight:600; padding:15px 12px; border-radius:3px; cursor:pointer; transition:all .2s; text-align:center; line-height:1.4; }
+.opt:hover:not(:disabled) { border-color:var(--gold); background:rgba(201,168,76,.09); box-shadow:0 0 14px rgba(201,168,76,.18); transform:translateY(-2px); }
+.opt:disabled { cursor:default; }
+.opt.correct { background:rgba(18,70,26,.85)!important; border-color:#4caf50!important; color:#80ff80!important; box-shadow:0 0 18px rgba(76,175,80,.3)!important; }
+.opt.wrong   { background:rgba(90,10,10,.85)!important; border-color:var(--red-bright)!important; color:#ff8080!important; opacity:.85!important; }
+
+/* SCOREBOARD */
+.sc-row { display:flex; align-items:center; gap:12px; padding:12px 16px; background:rgba(201,168,76,.04); border:1px solid rgba(201,168,76,.13); border-radius:3px; margin-bottom:8px; transition:all .35s; }
+.sc-row:nth-child(1) { border-color:rgba(255,215,0,.45); background:rgba(255,215,0,.06); }
+.sc-row:nth-child(2) { border-color:rgba(192,192,192,.35); }
+.sc-row:nth-child(3) { border-color:rgba(205,127,50,.35); }
+.sc-medal { font-size:1.2rem; width:32px; text-align:center; flex-shrink:0; }
+.sc-name  { flex:1; font-weight:600; }
+.sc-delta { font-size:.78rem; color:#5dba6a; font-weight:700; }
+.sc-pts   { font-family:'Amiri',serif; font-size:1.35rem; color:var(--gold-light); font-weight:700; }
+
+/* REVEAL */
+.rev-box { text-align:center; padding:18px; border-radius:3px; margin-bottom:16px; }
+.rev-box.ok  { background:rgba(18,70,26,.4); border:1px solid #4caf50; }
+.rev-box.bad { background:rgba(90,10,10,.4); border:1px solid var(--red-bright); }
+.rev-icon { font-size:2.4rem; }
+.rev-text { font-size:1.05rem; margin-top:7px; }
+
+/* FACT */
+.fact { background:rgba(201,168,76,.05); border:1px solid rgba(201,168,76,.22); border-radius:3px; padding:13px 16px; font-size:.86rem; color:var(--tan); line-height:1.75; }
+.fact strong { color:var(--gold-light); }
+
+/* PULSE */
+.dot { display:inline-block; width:9px; height:9px; background:var(--gold); border-radius:50%; animation:pls 1.3s infinite; margin:0 3px; }
+.dot:nth-child(2){animation-delay:.2s} .dot:nth-child(3){animation-delay:.4s}
+@keyframes pls{0%,100%{opacity:.2;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
+
+/* TROPHY */
+.trophy { font-size:5rem; text-align:center; animation:bob 1s ease-in-out infinite alternate; }
+@keyframes bob { to{transform:translateY(-10px) scale(1.04)} }
+
+/* STATUS */
+.status-msg { text-align:center; font-size:.88rem; color:var(--tan); margin-top:8px; min-height:20px; }
+.err-msg { color:#ff7070; text-align:center; font-size:.85rem; margin-top:8px; }
+
+/* UTILS */
+.tc { text-align:center; }
+.mt8{margin-top:8px} .mt12{margin-top:12px} .mt16{margin-top:16px} .mt20{margin-top:20px} .mt24{margin-top:24px}
+.mb8{margin-bottom:8px} .mb12{margin-bottom:12px} .mb16{margin-bottom:16px}
+.flex{display:flex} .gap12{gap:12px} .jc{justify-content:center}
+.q-num { font-size:.76rem; color:var(--tan); letter-spacing:3px; text-transform:uppercase; }
+.q-text { font-family:'Amiri',serif; font-size:clamp(1.1rem,3vw,1.45rem); color:var(--cream); line-height:1.75; text-align:center; margin-bottom:22px; }
+.pts-badge { font-family:'Amiri',serif; font-size:1.05rem; color:var(--gold); font-weight:700; }
+
+.conn-indicator { display:inline-flex; align-items:center; gap:7px; font-size:.78rem; color:var(--tan); }
+.conn-dot { width:8px; height:8px; border-radius:50%; background:#4caf50; animation:pulse-g 2s infinite; }
+@keyframes pulse-g{0%,100%{box-shadow:0 0 0 0 rgba(76,175,80,.5)}50%{box-shadow:0 0 0 6px rgba(76,175,80,0)}}
+
+@media(max-width:480px){ .opts{grid-template-columns:1fr} .card{padding:18px 14px} }
+</style>
+</head>
+<body>
+
+<!-- ========== SCREEN: HOME ========== -->
+<div class="screen active" id="s-home">
+  <div class="tc mb16">
+    <div class="game-title">⚔️ دول المحور</div>
+    <div class="subtitle">مسابقة تاريخية تنافسية</div>
+    <div class="divider"></div>
+  </div>
+  <div class="card" style="max-width:420px;">
+    <div class="tc mb16" style="font-size:.92rem; color:var(--tan); line-height:1.7;">
+      العب مع أصدقائك من أي مكان في العالم<br>بدون تسجيل أو إعداد 🌍
+    </div>
+    <div class="flex gap12" style="flex-direction:column;">
+      <button class="btn btn-full" onclick="goHost()">🎮 إنشاء غرفة جديدة (مضيف)</button>
+      <button class="btn btn-full" onclick="showScreen('s-join')">🎯 انضم إلى غرفة</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SCREEN: HOST LOBBY ========== -->
+<div class="screen" id="s-lobby">
+  <div class="tc mb16">
+    <div class="game-title" style="font-size:2.2rem;">⚔️ دول المحور</div>
+    <div class="divider"></div>
+  </div>
+  <div class="card" style="max-width:680px;">
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start;">
+      <div class="tc">
+        <div class="lbl tc">امسح للانضمام</div>
+        <div id="qr-wrap" style="margin:10px auto; display:inline-block;"></div>
+        <div class="mt12">
+          <div class="lbl tc">أو أدخل الكود</div>
+          <div class="room-code" id="rc-display">----</div>
+        </div>
+        <div class="mt12 conn-indicator" style="justify-content:center;">
+          <span class="conn-dot" id="host-conn-dot" style="background:#f0a020;animation:none;"></span>
+          <span id="host-conn-text">جارٍ الاتصال...</span>
+        </div>
+      </div>
+      <div>
+        <div class="lbl">اللاعبون (<span id="pc">0</span>)</div>
+        <div id="players-list" style="max-height:220px;overflow-y:auto;min-height:50px;margin-top:8px;">
+          <div class="tc" style="color:var(--tan);font-size:.86rem;padding:16px;">
+            في انتظار اللاعبين<br><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          </div>
+        </div>
+        <div class="mt16">
+          <button class="btn btn-full" id="start-btn" onclick="hostStartGame()" disabled>🚀 بدء اللعبة</button>
+          <div class="status-msg" id="start-hint">يلزم لاعب واحد على الأقل</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SCREEN: JOIN ========== -->
+<div class="screen" id="s-join">
+  <div class="tc mb16">
+    <div class="game-title" style="font-size:2.2rem;">⚔️ انضم</div>
+    <div class="divider"></div>
+  </div>
+  <div class="card" style="max-width:400px;">
+    <div class="lbl mb8">كود الغرفة (4 أرقام)</div>
+    <input class="inp mb12" id="join-code" type="text" placeholder="مثال: 3847" maxlength="4" inputmode="numeric">
+    <div class="lbl mb8">اسمك في اللعبة</div>
+    <input class="inp" id="join-name" type="text" placeholder="أدخل اسمك..." maxlength="18">
+    <div class="mt16">
+      <button class="btn btn-full" onclick="joinGame()">انضم الآن 🎯</button>
+    </div>
+    <div class="err-msg" id="join-err" style="display:none;"></div>
+    <div class="divider"></div>
+    <div class="tc">
+      <button class="btn" style="font-size:.82rem;padding:8px 18px;" onclick="showScreen('s-home')">← رجوع</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SCREEN: WAITING (Player) ========== -->
+<div class="screen" id="s-wait">
+  <div class="card tc" style="max-width:380px;">
+    <div style="font-size:3rem;margin-bottom:14px;">⏳</div>
+    <div class="game-title" style="font-size:1.7rem;">جاهز!</div>
+    <div style="color:var(--tan);margin:12px 0;">في انتظار المضيف لبدء اللعبة</div>
+    <div><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+    <div style="margin-top:16px;color:var(--gold-light);font-size:1.1rem;font-weight:700;" id="wait-name"></div>
+    <div class="mt12 conn-indicator" style="justify-content:center;">
+      <span class="conn-dot" id="player-conn-dot" style="background:#f0a020;animation:none;"></span>
+      <span id="player-conn-text">جارٍ الاتصال...</span>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SCREEN: QUESTION ========== -->
+<div class="screen" id="s-question">
+  <div style="width:100%;max-width:660px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <span class="q-num" id="q-badge">السؤال 1 من 10</span>
+      <span class="pts-badge" id="my-pts"></span>
+    </div>
+    <div class="prog-bar"><div class="prog-fill" id="q-prog"></div></div>
+    <div class="card">
+      <div class="timer-wrap">
+        <svg width="76" height="76" viewBox="0 0 76 76">
+          <circle class="tc-bg" cx="38" cy="38" r="32"/>
+          <circle class="tc-fill" id="tc" cx="38" cy="38" r="32"/>
+        </svg>
+        <div class="timer-num" id="t-num">20</div>
+      </div>
+      <div class="q-text" id="q-text"></div>
+      <div class="opts" id="opts"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SCREEN: REVEAL ========== -->
+<div class="screen" id="s-reveal">
+  <div style="width:100%;max-width:660px;">
+    <div class="card mb12">
+      <div id="rev-box" class="rev-box">
+        <div class="rev-icon" id="rev-icon"></div>
+        <div class="rev-text" id="rev-text"></div>
+      </div>
+      <div class="fact" id="fact-box"></div>
+    </div>
+    <div class="card">
+      <div class="tc mb12" style="font-family:'Amiri',serif;color:var(--gold);font-size:1.05rem;">الترتيب الحالي</div>
+      <div id="sc-list"></div>
+      <div class="tc mt20" id="next-wrap">
+        <button class="btn" id="next-btn" onclick="hostNext()">السؤال التالي ←</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SCREEN: FINAL ========== -->
+<div class="screen" id="s-final">
+  <div class="trophy">🏆</div>
+  <div class="game-title mt16 tc">انتهت اللعبة!</div>
+  <div class="subtitle mb16">النتائج النهائية</div>
+  <div class="card" style="max-width:520px;">
+    <div id="final-list"></div>
+    <div class="tc mt24">
+      <button class="btn" onclick="location.reload()">🔄 لعبة جديدة</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SCREEN: PLAYER FINAL ========== -->
+<div class="screen" id="s-pfinal">
+  <div class="card tc" style="max-width:380px;">
+    <div style="font-size:4rem;margin-bottom:12px;" id="pf-medal"></div>
+    <div class="game-title" style="font-size:1.9rem;" id="pf-place"></div>
+    <div class="divider"></div>
+    <div style="font-family:'Amiri',serif;font-size:2.8rem;color:var(--gold-light);" id="pf-pts"></div>
+    <div style="color:var(--tan);margin-top:4px;">نقطة إجمالية</div>
+    <div class="mt20"><button class="btn" onclick="location.reload()">🔄 العب مجدداً</button></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+//  QUESTIONS
+// ═══════════════════════════════════════
+const QS = [
+  { q:"كانت الولايات المتحدة الأمريكية من الأعضاء المؤسسين لدول الحلفاء في الحرب العالمية الثانية.", opts:["صح","خطأ"], ans:0, fact:"<strong>الولايات المتحدة:</strong> انضمت رسمياً للحلفاء بعد هجوم بيرل هاربور عام 1941 وكانت قوة رئيسية في التحالف." },
+{ q:"تعتبر فرنسا من دول الحلفاء التي قاومت الاحتلال الألماني خلال الحرب.", opts:["صح","خطأ"], ans:0, fact:"<strong>فرنسا الحرة:</strong> بقيادة شارل ديغول، كانت فرنسا عضواً أساسياً في الحلفاء رغم احتلال جزء كبير من أراضيها." },
+{ q:"كان الاتحاد السوفيتي ضمن دول المحور قبل أن يغير تحالفه للحلفاء.", opts:["صح","خطأ"], ans:1, fact:"<strong>الاتحاد السوفيتي:</strong> كان في البداية لديه ميثاق عدم اعتداء مع ألمانيا، لكنه انضم للحلفاء فور تعرضه للغزو الألماني عام 1941." },
+{ q:"بريطانيا هي الدولة الوحيدة التي حاربت دول المحور من بداية الحرب حتى نهايتها.", opts:["صح","خطأ"], ans:0, fact:"<strong>المملكة المتحدة:</strong> أعلنت الحرب على ألمانيا عام 1939 وبقيت تقاتل بشجاعة حتى تحقيق النصر النهائي عام 1945." },
+{ q:"الصين كانت جزءاً من تحالف دول المحور ضد الحلفاء.", opts:["صح","خطأ"], ans:1, fact:"<strong>الصين:</strong> كانت الصين تقاتل ضد التوسع الياباني (عضو المحور) منذ عام 1937، وبالتالي كانت جزءاً من قوى الحلفاء." },
+  { q:"ما هي الدول التي شكّلت محور برلين-روما-طوكيو عام 1936-1937؟", opts:["ألمانيا وإيطاليا واليابان","ألمانيا وروسيا وتركيا","إيطاليا واليابان والمجر","ألمانيا والنمسا وإيطاليا"], ans:0, fact:"<strong>محور برلين-روما-طوكيو:</strong> أُبرم أكتوبر 1936 بروتوكول برلين بين ألمانيا وإيطاليا، ثم انضمت اليابان عبر ميثاق مكافحة الكومنترن." },
+  { q:"من كان زعيم ألمانيا النازية خلال الحرب العالمية الثانية؟", opts:["هاينريش هيملر","أدولف هتلر","هيرمان غورينغ","يوزيف غوبلز"], ans:1, fact:"<strong>أدولف هتلر</strong> (1889-1945) زعيم الحزب النازي وقائد ألمانيا منذ 1933 حتى نهاية الحرب." },
+  { q:"ما اسم الاتفاقية التي وقّعتها دول المحور الثلاث عام 1940؟", opts:["ميثاق مولوتوف-ريبنتروب","معاهدة فيينا","الميثاق الثلاثي","اتفاقية باريس"], ans:2, fact:"<strong>الميثاق الثلاثي</strong> (سبتمبر 1940): وقّعته ألمانيا وإيطاليا واليابان في برلين، وقسّم العالم إلى مناطق نفوذ." },
+  { q:"من كان الديكتاتور الإيطالي مؤسس الفاشية؟", opts:["فيكتور إيمانويل الثالث","بيترو بادوليو","بينيتو موسوليني","غاليتسو تشيانو"], ans:2, fact:"<strong>بينيتو موسوليني</strong> (1883-1945) مؤسس الحزب الفاشي الإيطالي، حكم إيطاليا منذ 1922 وأطلق على نفسه لقب «الدوتشي»." },
+  { q:"ما هو مصطلح النازيين لمخططهم للإبادة الجماعية لليهود؟", opts:["العملية البربروسية","الحل النهائي","الليلة البلورية","مشروع توبلر"], ans:1, fact:"<strong>الحل النهائي (Endlösung):</strong> المصطلح النازي لخطة الإبادة الجماعية التي أودت بحياة ستة ملايين يهودي." },
+  { q:"من كان إمبراطور اليابان خلال الحرب العالمية الثانية؟", opts:["الإمبراطور ميجي","الإمبراطور هيروهيتو","الإمبراطور يوشيهيتو","الإمبراطور أكيهيتو"], ans:1, fact:"<strong>الإمبراطور هيروهيتو</strong> (1901-1989) حكم اليابان من 1926 إلى 1989، وقادها خلال فترة التوسع العسكري." },
+  { q:"ما اسم العملية النازية لغزو الاتحاد السوفيتي عام 1941؟", opts:["عملية أوفرلورد","عملية سي لايون","عملية بارباروسا","عملية ثندركلاب"], ans:2, fact:"<strong>عملية بارباروسا</strong> (22 يونيو 1941): أكبر عملية عسكرية برية في التاريخ بأكثر من 3 ملايين جندي ألماني." },
+  { q:"أي حدث دفع أمريكا للدخول في الحرب ضد دول المحور؟", opts:["سقوط فرنسا","هجوم بيرل هاربور","معركة لندن","غزو بولندا"], ans:1, fact:"<strong>هجوم بيرل هاربور</strong> (7 ديسمبر 1941): هجوم ياباني مباغت على القاعدة البحرية الأمريكية في هاواي." },
+  { q:"في أي مدينة عُقدت محاكمات قادة النازية بعد الحرب؟", opts:["برلين","ميونخ","نورنبرغ","هامبورغ"], ans:2, fact:"<strong>محاكمات نورنبرغ</strong> (1945-1946): حاكمت قادة النازية بتهم جرائم الحرب وأصدرت أحكاماً بالإعدام على كثيرين." },
+  { q:"متى استسلمت اليابان رسمياً وانتهت الحرب في المحيط الهادئ؟", opts:["2 سبتمبر 1945","8 مايو 1945","6 أغسطس 1945","15 أغسطس 1944"], ans:0, fact:"<strong>2 سبتمبر 1945:</strong> وقّعت اليابان وثيقة الاستسلام الرسمي على ظهر البارجة الأمريكية USS Missouri في خليج طوكيو." },
+  { q:"ما اسم الحزب الذي أسسه هتلر وحكم به ألمانيا؟", opts:["الحزب الشيوعي الألماني","حزب العمال الاشتراكي القومي (النازي)","الحزب الديمقراطي الألماني","حزب الوطن الألماني"], ans:1, fact:"<strong>الحزب النازي (NSDAP):</strong> اختصار الحزب الاشتراكي الوطني لعمال ألمانيا، أسسه هتلر عام 1920 وأوصله للسلطة عام 1933." },
+  { q:"ما اسم رئيس الوزراء الياباني الذي قاد اليابان في بداية الحرب؟", opts:["هيدكي توجو","يامamoto إيسوروكو","هيروشي أوشيما","شيجنوري توغو"], ans:0, fact:"<strong>هيدكي توجو</strong> (1884-1948): رئيس وزراء اليابان من 1941 إلى 1944، أشرف على الهجوم على بيرل هاربور ونُفِّذ فيه حكم الإعدام بعد الحرب." },
+  { q:"ما اسم المعركة البحرية الكبرى التي هزمت فيها اليابان أمام أمريكا عام 1942؟", opts:["معركة بحر الشعاب","معركة ميدواي","معركة غوادالكانال","معركة ليتي غالف"], ans:1, fact:"<strong>معركة ميدواي</strong> (يونيو 1942): نقطة تحوّل في حرب المحيط الهادئ، دمّرت فيها أمريكا 4 حاملات طائرات يابانية." },
+  { q:"ما اسم أول قنبلة ذرية أُلقيت على اليابان عام 1945؟", opts:["فات مان","ليتل بوي","ثين مان","بيغ بوي"], ans:1, fact:"<strong>ليتل بوي (Little Boy):</strong> القنبلة الذرية التي أُلقيت على هيروشيما في 6 أغسطس 1945، وأودت بحياة أكثر من 80,000 شخص فوراً." },
+  { q:"متى غزت ألمانيا بولندا وبدأت الحرب العالمية الثانية رسمياً؟", opts:["1 سبتمبر 1939","3 سبتمبر 1939","1 أغسطس 1939","15 مارس 1939"], ans:0, fact:"<strong>1 سبتمبر 1939:</strong> غزت ألمانيا النازية بولندا، مما دفع بريطانيا وفرنسا لإعلان الحرب على ألمانيا بعد يومين." },
+  { q:"ما اسم الخط الدفاعي الفرنسي الذي تجاوزته ألمانيا عام 1940؟", opts:["خط زيغفريد","خط ماجينو","خط هيندنبرغ","خط أتلانتيك"], ans:1, fact:"<strong>خط ماجينو:</strong> منظومة تحصينات فرنسية ضخمة على الحدود مع ألمانيا، تجاوزتها القوات الألمانية عبر بلجيكا وغابة أردين." },
+  { q:"ما اسم العملية الألمانية لغزو فرنسا وبلاد المنخفضات عام 1940؟", opts:["عملية سيلو","عملية فال غيلب","عملية أوفرلورد","عملية مارشال"], ans:1, fact:"<strong>عملية فال غيلب (Fall Gelb):</strong> الخطة الألمانية التي أسقطت فرنسا في 6 أسابيع فقط مايو-يونيو 1940." },
+  { q:"ما اسم عملية إنزال الحلفاء في نورماندي يوم 6 يونيو 1944؟", opts:["عملية تورش","عملية أوفرلورد","عملية ماركت غاردن","عملية دراغون"], ans:1, fact:"<strong>عملية أوفرلورد (D-Day):</strong> أضخم عملية إنزال بحري في التاريخ، شارك فيها أكثر من 156,000 جندي حلفاء على شواطئ نورماندي." },
+  { q:"من قاد قوات المحور في شمال أفريقيا ولُقِّب بـ'ثعلب الصحراء'؟", opts:["هاينريش هيملر","إيرفين روميل","هيرمان غورينغ","فريدريش باولوس"], ans:1, fact:"<strong>إيرفين روميل</strong> (1891-1944): قائد الجيش الألماني الأفريقي، اشتُهر بتكتيكاته الخاطفة في صحراء شمال أفريقيا." },
+  { q:"ما اسم المعركة التي انتهت بمحاصرة وأسر الجيش الألماني السادس في روسيا؟", opts:["معركة كورسك","معركة موسكو","معركة ستالينغراد","معركة لينينغراد"], ans:2, fact:"<strong>معركة ستالينغراد</strong> (1942-1943): إحدى أكثر المعارك دموية في التاريخ، أسفرت عن أسر الجنرال باولوس و91,000 جندي ألماني." },
+  { q:"ما اسم برنامج ألمانيا لتطوير الصواريخ الباليستية خلال الحرب؟", opts:["مشروع فيرنر","برنامج V-2","عملية بابركليب","مشروع براون"], ans:1, fact:"<strong>صاروخ V-2:</strong> أول صاروخ باليستي في التاريخ، طوّره فيرنر فون براون، واستُخدم لقصف لندن وأنتويرب عام 1944." },
+  { q:"ما اسم ميثاق عدم الاعتداء بين ألمانيا والاتحاد السوفيتي عام 1939؟", opts:["ميثاق برلين","ميثاق مولوتوف-ريبنتروب","اتفاقية ميونخ","ميثاق روما"], ans:1, fact:"<strong>ميثاق مولوتوف-ريبنتروب</strong> (أغسطس 1939): اتفاق سري قسّم أوروبا الشرقية بين ألمانيا والسوفييت، وكشف عنه بعد الحرب." },
+  { q:"ما اسم تنظيم الشرطة السرية النازية الرهيب؟", opts:["SS","SA","Gestapo","Wehrmacht"], ans:2, fact:"<strong>الغيستابو (Gestapo):</strong> الشرطة السرية للدولة النازية، تأسست عام 1933، واشتُهرت بأساليب التعذيب والقمع الوحشي." },
+  { q:"ما اسم المعركة الجوية الكبرى بين ألمانيا وبريطانيا عام 1940؟", opts:["معركة الأطلسي","معركة بريطانيا","معركة المانش","معركة لندن"], ans:1, fact:"<strong>معركة بريطانيا</strong> (يوليو-أكتوبر 1940): أولى المعارك التي خسرها هتلر، حيث فشل سلاح الجو الألماني (لوفتوافه) في السيطرة على الأجواء البريطانية." },
+  { q:"ما اسم مدينة اليابان الثانية التي ضُربت بقنبلة ذرية؟", opts:["طوكيو","أوساكا","ناغازاكي","كيوتو"], ans:2, fact:"<strong>ناغازاكي:</strong> ضُربت في 9 أغسطس 1945 بقنبلة 'فات مان'، وأودت بحياة ما بين 40,000 و80,000 شخص. استسلمت اليابان بعدها بأيام." }
+];
+
+// ═══════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════
+const G = {
+  role: null,        // 'host' | 'player'
+  peer: null,
+  hostConn: null,    // player→host connection
+  players: {},       // host keeps {connId: {name,score,lastDelta,conn}}
+  myId: null,
+  myName: '',
+  myScore: 0,
+  roomCode: '',
+  currentQ: 0,
+  answered: false,
+  timerInt: null,
+  timeLeft: 20,
+};
+
+const MEDALS = ['🥇','🥈','🥉'];
+
+// ═══════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function renderPlayers() {
+  const list = document.getElementById('players-list');
+  const pl = Object.values(G.players);
+  document.getElementById('pc').textContent = pl.length;
+  if (!pl.length) {
+    list.innerHTML = '<div class="tc" style="color:var(--tan);font-size:.86rem;padding:16px;">في انتظار اللاعبين<br><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>';
+    document.getElementById('start-btn').disabled = true;
+    document.getElementById('start-hint').textContent = 'يلزم لاعب واحد على الأقل';
+    return;
+  }
+  list.innerHTML = pl.map(p=>`
+    <div class="player-item">
+      <div class="avatar">${p.name.charAt(0).toUpperCase()}</div>
+      <span style="font-weight:600">${p.name}</span>
+    </div>`).join('');
+  document.getElementById('start-btn').disabled = false;
+  document.getElementById('start-hint').textContent = `${pl.length} لاعب جاهز ✅`;
+}
+
+function renderScoreboard(containerId) {
+  const all = [...Object.values(G.players)].sort((a,b)=>b.score-a.score);
+  document.getElementById(containerId).innerHTML = all.map((p,i)=>`
+    <div class="sc-row">
+      <div class="sc-medal">${MEDALS[i]||i+1}</div>
+      <div class="sc-name">${p.name}</div>
+      ${p.lastDelta>0?`<div class="sc-delta">+${p.lastDelta}</div>`:''}
+      <div class="sc-pts">${p.score}</div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════
+//  HOST SETUP
+// ═══════════════════════════════════════
+function goHost() {
+  G.role = 'host';
+  G.roomCode = String(Math.floor(1000+Math.random()*9000));
+  showScreen('s-lobby');
+
+  const peerId = 'axisquiz-' + G.roomCode;
+  G.peer = new Peer(peerId, { debug: 0 });
+
+  G.peer.on('open', id => {
+    document.getElementById('rc-display').textContent = G.roomCode;
+    document.getElementById('host-conn-dot').style.background = '#4caf50';
+    document.getElementById('host-conn-dot').style.animation = '';
+    document.getElementById('host-conn-text').textContent = 'متصل ✅';
+
+    // QR code
+    document.getElementById('qr-wrap').innerHTML = '';
+    const joinUrl = `${location.href.split('#')[0]}#join-${G.roomCode}`;
+    new QRCode(document.getElementById('qr-wrap'), {
+      text: joinUrl, width:150, height:150,
+      colorDark:'#181410', colorLight:'#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  });
+
+  G.peer.on('connection', conn => {
+    conn.on('open', () => {
+      conn.on('data', data => hostHandleMsg(conn, data));
+    });
+    conn.on('close', () => {
+      delete G.players[conn.peer];
+      renderPlayers();
+    });
+  });
+
+  G.peer.on('error', err => {
+    document.getElementById('host-conn-text').textContent = 'خطأ في الاتصال';
+    document.getElementById('host-conn-dot').style.background = '#cc2222';
+    console.error(err);
+  });
+
+  renderPlayers();
+}
+
+function hostHandleMsg(conn, data) {
+  if (data.type === 'join') {
+    G.players[conn.peer] = { name: data.name, score: 0, lastDelta: 0, conn };
+    renderPlayers();
+    conn.send({ type: 'joined', name: data.name });
+  }
+  if (data.type === 'answer') {
+    const p = G.players[conn.peer];
+    if (!p) return;
+    const q = QS[G.currentQ];
+    const correct = data.idx === q.ans;
+    const pts = correct ? Math.max(100, data.timeLeft * 50) : 0;
+    p.lastDelta = pts;
+    p.score += pts;
+    // Send personal result back
+    conn.send({ type: 'result', correct, pts, correctIdx: q.ans });
+    // Check if all answered (simplified: update board after each)
+    hostBroadcast({ type: 'scoreUpdate', players: hostPlayersData() });
+  }
+}
+
+function hostBroadcast(msg) {
+  Object.values(G.players).forEach(p => {
+    try { p.conn.send(msg); } catch(e){}
+  });
+}
+
+function hostPlayersData() {
+  return Object.values(G.players).map(p=>({ name:p.name, score:p.score, lastDelta:p.lastDelta }));
+}
+
+function hostStartGame() {
+  if (!Object.keys(G.players).length) return;
+  G.currentQ = 0;
+  hostBroadcast({ type:'start' });
+  hostShowQuestion();
+}
+
+function hostShowQuestion() {
+  if (G.currentQ >= QS.length) { hostShowFinal(); return; }
+  const q = QS[G.currentQ];
+  // Reset deltas
+  Object.values(G.players).forEach(p => p.lastDelta = 0);
+  hostBroadcast({ type:'question', idx:G.currentQ, q:q.q, opts:q.opts, total:QS.length });
+  showQuestionUI(q, true);
+}
+
+function hostNext() {
+  G.currentQ++;
+  hostBroadcast({ type:'next', idx:G.currentQ });
+  hostShowQuestion();
+}
+
+function hostShowFinal() {
+  hostBroadcast({ type:'final', players: hostPlayersData() });
+  renderScoreboard('final-list');
+  showScreen('s-final');
+}
+
+// ═══════════════════════════════════════
+//  PLAYER JOIN
+// ═══════════════════════════════════════
+function joinGame() {
+  const code = document.getElementById('join-code').value.trim();
+  const name = document.getElementById('join-name').value.trim();
+  const errEl = document.getElementById('join-err');
+  errEl.style.display = 'none';
+
+  if (!/^\d{4}$/.test(code)) { showErr(errEl,'الكود يجب أن يكون 4 أرقام'); return; }
+  if (!name || name.length < 2) { showErr(errEl,'اكتب اسمك (حرفان على الأقل)'); return; }
+
+  G.role = 'player';
+  G.myName = name;
+  G.roomCode = code;
+  G.myScore = 0;
+
+  const peerId = 'player-' + Date.now() + '-' + Math.floor(Math.random()*9999);
+  G.peer = new Peer(peerId, { debug:0 });
+
+  G.peer.on('open', () => {
+    const hostId = 'axisquiz-' + code;
+    G.hostConn = G.peer.connect(hostId);
+
+    G.hostConn.on('open', () => {
+      document.getElementById('player-conn-dot').style.background = '#4caf50';
+      document.getElementById('player-conn-text').textContent = 'متصل بالمضيف ✅';
+      G.hostConn.send({ type:'join', name });
+      document.getElementById('wait-name').textContent = '👤 ' + name;
+      showScreen('s-wait');
+    });
+
+    G.hostConn.on('data', data => playerHandleMsg(data));
+
+    G.hostConn.on('close', () => {
+      alert('انقطع الاتصال بالمضيف');
+    });
+
+    G.hostConn.on('error', err => {
+      showErr(errEl, 'تعذر الاتصال — تأكد من الكود');
+    });
+  });
+
+  G.peer.on('error', err => {
+    showErr(errEl, 'خطأ في الشبكة — حاول مجدداً');
+  });
+}
+
+function playerHandleMsg(data) {
+  if (data.type === 'start' || data.type === 'question') {
+    const q = { q:data.q, opts:data.opts, ans:data.ans };
+    G.currentQ = data.idx;
+    showQuestionUI(q, false);
+  }
+  if (data.type === 'result') {
+    playerShowResult(data);
+  }
+  if (data.type === 'scoreUpdate') {
+    updateScoreboardFromData(data.players, 'sc-list');
+  }
+  if (data.type === 'next') {
+    // wait — host will send question event
+  }
+  if (data.type === 'final') {
+    showPlayerFinal(data.players);
+  }
+}
+
+function showErr(el, msg) { el.textContent = msg; el.style.display = 'block'; }
+
+// ═══════════════════════════════════════
+//  QUESTION UI (shared)
+// ═══════════════════════════════════════
+function showQuestionUI(q, isHost) {
+  G.answered = false;
+  const qData = isHost ? QS[G.currentQ] : q;
+
+  document.getElementById('q-badge').textContent = `السؤال ${G.currentQ+1} من ${QS.length}`;
+  document.getElementById('q-prog').style.width = `${(G.currentQ/QS.length)*100}%`;
+  document.getElementById('my-pts').textContent = G.role==='player' ? `نقاطك: ${G.myScore}` : '';
+  document.getElementById('q-text').textContent = qData.q;
+
+  // استبدل السطر الأصلي بهذا الكود:
+const opts = document.getElementById('opts');
+// إذا كان عدد الخيارات 2، اجعل التصميم بعمود واحد، وإذا كان 4 اجعله بعمودين
+opts.style.gridTemplateColumns = qData.opts.length === 2 ? "1fr" : "1fr 1fr"; 
+
+opts.innerHTML = qData.opts.map((o,i)=>`
+  <button class="opt" id="opt-${i}" onclick="selectAnswer(${i})">${o}</button>`).join('');
+
+  showScreen('s-question');
+  startTimer(20, qData, isHost);
+}
+
+// ═══════════════════════════════════════
+//  TIMER
+// ═══════════════════════════════════════
+function startTimer(sec, q, isHost) {
+  G.timeLeft = sec;
+  clearInterval(G.timerInt);
+  const circ = document.getElementById('tc');
+  const tnum = document.getElementById('t-num');
+  const C = 201; // 2πr ≈ 201 for r=32
+
+  function tick() {
+    const f = G.timeLeft / sec;
+    circ.style.strokeDashoffset = C * (1 - f);
+    circ.style.stroke = f > .5 ? 'var(--gold)' : f > .25 ? '#ff9900' : '#cc2222';
+    tnum.textContent = G.timeLeft;
+  }
+  tick();
+
+  G.timerInt = setInterval(() => {
+    G.timeLeft--;
+    tick();
+    if (G.timeLeft <= 0) {
+      clearInterval(G.timerInt);
+      if (!G.answered) timeUp(q, isHost);
+    }
+  }, 1000);
+}
+
+function timeUp(q, isHost) {
+  G.answered = true;
+  disableOpts();
+  markCorrectOpt(QS[G.currentQ]?.ans ?? q.ans);
+  if (!isHost) {
+    G.hostConn.send({ type:'answer', idx:-1, timeLeft:0 });
+  }
+  setTimeout(() => showReveal(-1, isHost ? QS[G.currentQ] : q, isHost), 1100);
+}
+
+// ═══════════════════════════════════════
+//  ANSWERING
+// ═══════════════════════════════════════
+function selectAnswer(idx) {
+  if (G.answered) return;
+  G.answered = true;
+  clearInterval(G.timerInt);
+  const q = QS[G.currentQ];
+
+  disableOpts();
+  const correct = idx === q.ans;
+  document.getElementById('opt-'+idx).classList.add(correct?'correct':'wrong');
+  markCorrectOpt(q.ans);
+
+  if (G.role === 'player') {
+    const pts = correct ? Math.max(100, G.timeLeft*50) : 0;
+    G.myScore += pts;
+    G.hostConn.send({ type:'answer', idx, timeLeft:G.timeLeft });
+    setTimeout(() => showReveal(idx, q, false), 1100);
+  } else {
+    // Host playing with no opponents — self score
+    setTimeout(() => showReveal(idx, q, true), 1100);
+  }
+}
+
+function disableOpts() {
+  document.querySelectorAll('.opt').forEach(b=>b.disabled=true);
+}
+function markCorrectOpt(ans) {
+  const el = document.getElementById('opt-'+ans);
+  if (el) el.classList.add('correct');
+}
+
+// ═══════════════════════════════════════
+//  REVEAL
+// ═══════════════════════════════════════
+function showReveal(selectedIdx, q, isHost) {
+  const correct = selectedIdx === q.ans;
+  const noAns = selectedIdx === -1;
+  const box = document.getElementById('rev-box');
+  const icon = document.getElementById('rev-icon');
+  const text = document.getElementById('rev-text');
+
+  if (noAns) {
+    box.className='rev-box bad'; icon.textContent='⏰';
+    text.innerHTML=`انتهى الوقت! الإجابة: <strong style="color:#80ff80">${q.opts[q.ans]}</strong>`;
+  } else if (correct) {
+    const pts = Math.max(100, G.timeLeft*50);
+    box.className='rev-box ok'; icon.textContent='✅';
+    text.innerHTML=`إجابة صحيحة! <span style="color:var(--gold-light);font-weight:700">+${pts} نقطة</span>`;
+  } else {
+    box.className='rev-box bad'; icon.textContent='❌';
+    text.innerHTML=`خطأ! الإجابة: <strong style="color:#80ff80">${q.opts[q.ans]}</strong>`;
+  }
+
+  document.getElementById('fact-box').innerHTML = q.fact || QS[G.currentQ]?.fact || '';
+
+  // Scoreboard
+  if (isHost) {
+    renderScoreboard('sc-list');
+  } else {
+    // Will update via scoreUpdate event
+    document.getElementById('sc-list').innerHTML = '<div class="tc" style="color:var(--tan);padding:12px;">في انتظار نتائج الجميع...</div>';
+  }
+
+  // Only host controls next button
+  document.getElementById('next-wrap').style.display = isHost ? 'block' : 'none';
+  const isLast = G.currentQ >= QS.length-1;
+  document.getElementById('next-btn').textContent = isLast ? '🏆 النتائج النهائية' : `السؤال ${G.currentQ+2} ←`;
+
+  showScreen('s-reveal');
+}
+
+function updateScoreboardFromData(players, id) {
+  const sorted = [...players].sort((a,b)=>b.score-a.score);
+  document.getElementById(id).innerHTML = sorted.map((p,i)=>`
+    <div class="sc-row">
+      <div class="sc-medal">${MEDALS[i]||i+1}</div>
+      <div class="sc-name">${p.name}</div>
+      ${p.lastDelta>0?`<div class="sc-delta">+${p.lastDelta}</div>`:''}
+      <div class="sc-pts">${p.score}</div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════
+//  FINAL
+// ═══════════════════════════════════════
+function showPlayerFinal(players) {
+  const sorted = [...players].sort((a,b)=>b.score-a.score);
+  const rank = sorted.findIndex(p=>p.name===G.myName);
+  const me = sorted[rank] || { score: G.myScore };
+  document.getElementById('pf-medal').textContent = MEDALS[rank] || '🎖️';
+  document.getElementById('pf-place').textContent = `المركز ${rank+1}`;
+  document.getElementById('pf-pts').textContent = me.score;
+  showScreen('s-pfinal');
+}
+
+// ═══════════════════════════════════════
+//  HANDLE URL HASH (QR scan)
+// ═══════════════════════════════════════
+window.addEventListener('load', () => {
+  const hash = location.hash.slice(1);
+  if (hash.startsWith('join-')) {
+    const code = hash.replace('join-','');
+    document.getElementById('join-code').value = code;
+    showScreen('s-join');
+  }
+});
+</script>
+</body>
+</html>
