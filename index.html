@@ -614,22 +614,23 @@ function goHost() {
   showScreen('s-lobby');
   buildTeams();
 
+  // ← أولّد الكود والـ QR فوراً بدون انتظار الاتصال
+  document.getElementById('rc-display').textContent = G.roomCode;
+  const joinUrl = `${location.href.split('#')[0]}#join-${G.roomCode}`;
+  document.getElementById('qr-wrap').innerHTML = '';
+  new QRCode(document.getElementById('qr-wrap'), {
+    text: joinUrl, width:140, height:140,
+    colorDark:'#181410', colorLight:'#ffffff',
+    correctLevel: QRCode.CorrectLevel.M
+  });
+
   const peerId = 'axisquiz-' + G.roomCode;
   G.peer = new Peer(peerId, { debug: 0 });
 
   G.peer.on('open', id => {
-    document.getElementById('rc-display').textContent = G.roomCode;
     document.getElementById('host-conn-dot').style.background = '#4caf50';
     document.getElementById('host-conn-dot').style.animation = '';
     document.getElementById('host-conn-text').textContent = 'متصل ✅';
-
-    document.getElementById('qr-wrap').innerHTML = '';
-    const joinUrl = `${location.href.split('#')[0]}#join-${G.roomCode}`;
-    new QRCode(document.getElementById('qr-wrap'), {
-      text: joinUrl, width:140, height:140,
-      colorDark:'#181410', colorLight:'#ffffff',
-      correctLevel: QRCode.CorrectLevel.M
-    });
   });
 
   G.peer.on('connection', conn => {
