@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لعبة منافع الاستثمار</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@400;700;900&display=swap');
+  :root {
+    --gold: #F5C518; --gold-dark: #C49A00; --navy: #0A1628; --navy-mid: #112240;
+    --navy-light: #1E3A5F; --teal: #00C9A7; --rose: #FF6B6B; --white: #F0F4FF;
+    --glass: rgba(255,255,255,0.07); --glass-border: rgba(255,255,255,0.12);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Cairo',sans-serif; background:var(--navy); color:var(--white); min-height:100vh; overflow-x:hidden; position:relative; }
+  body::before { content:''; position:fixed; inset:0; background: radial-gradient(ellipse 60% 50% at 20% 20%, rgba(0,201,167,0.12) 0%, transparent 60%), radial-gradient(ellipse 50% 60% at 80% 80%, rgba(245,197,24,0.10) 0%, transparent 60%); pointer-events:none; z-index:0; }
+  .stars { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+  .star { position:absolute; width:2px; height:2px; background:white; border-radius:50%; animation:twinkle var(--d,3s) ease-in-out infinite; opacity:var(--o,0.4); }
+  @keyframes twinkle { 0%,100%{opacity:var(--o);transform:scale(1)} 50%{opacity:0.1;transform:scale(0.5)} }
+  #app { position:relative; z-index:1; min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:20px; }
+  .screen { display:none; width:100%; max-width:900px; animation:fadeIn 0.5s ease; }
+  .screen.active { display:flex; flex-direction:column; align-items:center; gap:20px; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+  .game-logo { text-align:center; margin-bottom:10px; }
+  .game-logo .icon { font-size:3rem; display:block; animation:float 3s ease-in-out infinite; }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+  .game-logo h1 { font-family:'Tajawal',sans-serif; font-size:clamp(1.8rem,5vw,2.8rem); font-weight:900; background:linear-gradient(135deg,var(--gold),var(--teal)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; line-height:1.2; }
+  .game-logo p { color:rgba(240,244,255,0.6); font-size:0.9rem; margin-top:5px; }
+  .card { background:var(--glass); border:1px solid var(--glass-border); backdrop-filter:blur(20px); border-radius:20px; padding:28px; width:100%; }
+  .card-title { font-size:1.2rem; font-weight:700; color:var(--gold); margin-bottom:18px; display:flex; align-items:center; gap:8px; }
+  .btn { font-family:'Cairo',sans-serif; font-size:1rem; font-weight:700; padding:14px 28px; border:none; border-radius:12px; cursor:pointer; transition:all 0.25s ease; display:inline-flex; align-items:center; gap:8px; }
+  .btn-gold { background:linear-gradient(135deg,var(--gold),#E6A800); color:var(--navy); }
+  .btn-gold:hover { transform:translateY(-2px); box-shadow:0 8px 25px rgba(245,197,24,0.4); }
+  .btn-teal { background:linear-gradient(135deg,var(--teal),#00A888); color:var(--navy); }
+  .btn-teal:hover { transform:translateY(-2px); box-shadow:0 8px 25px rgba(0,201,167,0.4); }
+  .btn-outline { background:transparent; border:2px solid var(--glass-border); color:var(--white); }
+  .btn-outline:hover { border-color:var(--gold); color:var(--gold); }
+  .btn:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+  input[type="text"] { font-family:'Cairo',sans-serif; font-size:1rem; background:rgba(255,255,255,0.08); border:1px solid var(--glass-border); border-radius:12px; padding:12px 16px; color:var(--white); width:100%; transition:border-color 0.2s; text-align:right; }
+  input[type="text"]:focus { outline:none; border-color:var(--gold); background:rgba(245,197,24,0.06); }
+  input::placeholder { color:rgba(240,244,255,0.35); }
+  .qr-container { display:flex; flex-direction:column; align-items:center; gap:16px; }
+  #qrcode { background:white; padding:16px; border-radius:16px; cursor:pointer; transition:transform 0.2s; }
+  #qrcode:hover { transform:scale(1.03); }
+  #qrcode canvas, #qrcode img { display:block !important; }
+  .qr-hint { font-size:0.8rem; color:rgba(240,244,255,0.45); text-align:center; }
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:1000; align-items:center; justify-content:center; }
+  .modal-overlay.open { display:flex; }
+  .modal-inner { background:white; padding:24px; border-radius:24px; max-width:90vw; cursor:pointer; text-align:center; }
+  #qrcode-big canvas, #qrcode-big img { display:block !important; }
+  .players-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px; max-height:220px; overflow-y:auto; }
+  .player-chip { background:rgba(255,255,255,0.08); border:1px solid var(--glass-border); border-radius:10px; padding:10px 12px; display:flex; align-items:center; gap:8px; font-size:0.85rem; font-weight:600; animation:popIn 0.3s ease; }
+  @keyframes popIn { from{transform:scale(0.7);opacity:0} to{transform:scale(1);opacity:1} }
+  .player-avatar { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:900; flex-shrink:0; }
+  .team-badge { font-size:0.65rem; padding:2px 6px; border-radius:6px; font-weight:700; margin-right:auto; }
+  .teams-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .team-card { padding:16px; border-radius:14px; border:2px solid transparent; cursor:pointer; transition:all 0.2s; text-align:center; }
+  .team-card:hover { transform:translateY(-2px); }
+  .team-card.selected { border-color:white; transform:scale(1.02); box-shadow:0 0 20px rgba(255,255,255,0.2); }
+  .team-card .team-icon { font-size:2rem; display:block; margin-bottom:6px; }
+  .team-card .team-name { font-weight:700; font-size:0.9rem; }
+  .team-card .member-count { font-size:0.75rem; opacity:0.7; margin-top:3px; }
+  .new-team-input { display:flex; gap:10px; align-items:center; }
+  .question-header { display:flex; justify-content:space-between; align-items:center; width:100%; flex-wrap:wrap; gap:10px; }
+  .q-counter { font-size:0.85rem; color:rgba(240,244,255,0.6); }
+  .timer-circle { width:60px; height:60px; border-radius:50%; border:3px solid var(--teal); display:flex; align-items:center; justify-content:center; font-size:1.4rem; font-weight:900; color:var(--teal); transition:border-color 0.5s,color 0.5s; }
+  .timer-circle.urgent { border-color:var(--rose); color:var(--rose); animation:pulse 0.5s ease-in-out infinite alternate; }
+  @keyframes pulse { from{transform:scale(1)} to{transform:scale(1.1)} }
+  .question-box { background:linear-gradient(135deg,rgba(0,201,167,0.1),rgba(245,197,24,0.08)); border:1px solid rgba(0,201,167,0.25); border-radius:18px; padding:24px; text-align:center; font-size:clamp(1.1rem,3vw,1.4rem); font-weight:700; line-height:1.6; width:100%; }
+  .options-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; width:100%; }
+  @media(max-width:500px){.options-grid{grid-template-columns:1fr}}
+  .option-btn { background:var(--glass); border:2px solid var(--glass-border); border-radius:14px; padding:16px 20px; color:var(--white); font-family:'Cairo',sans-serif; font-size:1rem; font-weight:600; cursor:pointer; text-align:right; transition:all 0.2s; display:flex; align-items:center; gap:12px; line-height:1.4; }
+  .option-btn:not(:disabled):hover { border-color:var(--gold); background:rgba(245,197,24,0.1); transform:translateY(-1px); }
+  .option-btn.correct { background:rgba(0,201,167,0.2); border-color:var(--teal); }
+  .option-btn.wrong { background:rgba(255,107,107,0.2); border-color:var(--rose); }
+  .option-btn.selected-correct { background:rgba(0,201,167,0.35); border-color:var(--teal); box-shadow:0 0 20px rgba(0,201,167,0.4); }
+  .option-btn.selected-wrong { background:rgba(255,107,107,0.35); border-color:var(--rose); box-shadow:0 0 20px rgba(255,107,107,0.4); }
+  .option-label { width:32px; height:32px; border-radius:8px; background:rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center; font-weight:900; font-size:0.9rem; flex-shrink:0; }
+  .leaderboard { width:100%; }
+  .lb-item { display:flex; align-items:center; gap:14px; padding:14px 18px; background:var(--glass); border:1px solid var(--glass-border); border-radius:14px; margin-bottom:10px; animation:slideIn 0.4s ease forwards; opacity:0; }
+  @keyframes slideIn { from{opacity:0;transform:translateX(-20px)} to{opacity:1;transform:translateX(0)} }
+  .lb-rank { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:1rem; flex-shrink:0; }
+  .rank-1{background:linear-gradient(135deg,#FFD700,#FFA500);color:#000}
+  .rank-2{background:linear-gradient(135deg,#C0C0C0,#A0A0A0);color:#000}
+  .rank-3{background:linear-gradient(135deg,#CD7F32,#A0522D);color:#fff}
+  .rank-other{background:rgba(255,255,255,0.1);color:var(--white)}
+  .lb-info { flex:1; }
+  .lb-name { font-weight:700; font-size:1rem; }
+  .lb-team { font-size:0.75rem; opacity:0.6; margin-top:2px; }
+  .lb-score { font-size:1.3rem; font-weight:900; color:var(--gold); }
+  .team-lb-item { display:flex; align-items:center; gap:12px; padding:12px 18px; border-radius:12px; margin-bottom:8px; animation:slideIn 0.4s ease forwards; opacity:0; }
+  .tabs { display:flex; gap:4px; background:rgba(255,255,255,0.05); border-radius:12px; padding:4px; width:100%; }
+  .tab { flex:1; padding:10px; border-radius:9px; border:none; font-family:'Cairo',sans-serif; font-weight:700; font-size:0.9rem; cursor:pointer; transition:all 0.2s; color:rgba(240,244,255,0.5); background:transparent; }
+  .tab.active { background:var(--navy-light); color:var(--gold); }
+  .progress-bar { width:100%; height:4px; background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden; }
+  .progress-fill { height:100%; background:linear-gradient(90deg,var(--teal),var(--gold)); border-radius:2px; transition:width 1s linear; }
+  .feedback-banner { width:100%; padding:16px 20px; border-radius:14px; text-align:center; font-size:1.1rem; font-weight:700; display:none; animation:fadeIn 0.3s ease; }
+  .feedback-banner.correct-fb{background:rgba(0,201,167,0.2);border:1px solid var(--teal);color:var(--teal)}
+  .feedback-banner.wrong-fb{background:rgba(255,107,107,0.2);border:1px solid var(--rose);color:var(--rose)}
+  .feedback-banner.show{display:block}
+  .waiting-pulse { display:flex; gap:8px; justify-content:center; margin-top:10px; }
+  .dot { width:10px; height:10px; border-radius:50%; background:var(--teal); animation:bounce 0.8s ease-in-out infinite; }
+  .dot:nth-child(2){animation-delay:0.15s}
+  .dot:nth-child(3){animation-delay:0.3s}
+  @keyframes bounce{0%,80%,100%{transform:scale(0.8);opacity:0.5}40%{transform:scale(1.2);opacity:1}}
+  .game-code-display { font-size:2.5rem; font-weight:900; letter-spacing:0.3em; color:var(--gold); text-align:center; padding:16px; background:rgba(245,197,24,0.08); border:2px dashed rgba(245,197,24,0.3); border-radius:16px; font-family:'Tajawal',sans-serif; }
+  .two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; width:100%; }
+  @media(max-width:600px){.two-col{grid-template-columns:1fr}}
+  .section-label { font-size:0.8rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:rgba(240,244,255,0.45); margin-bottom:10px; }
+  .explainer { background:rgba(245,197,24,0.08); border:1px solid rgba(245,197,24,0.2); border-radius:12px; padding:14px 18px; font-size:0.85rem; line-height:1.7; color:rgba(240,244,255,0.75); }
+  .correct-answer-reveal { background:rgba(0,201,167,0.12); border:1px solid rgba(0,201,167,0.3); border-radius:12px; padding:12px 18px; width:100%; text-align:center; font-size:0.95rem; display:none; }
+  .correct-answer-reveal.show{display:block}
+  .score-flash { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); font-size:3rem; font-weight:900; color:var(--gold); pointer-events:none; animation:scoreFloat 1.2s ease forwards; z-index:999; text-shadow:0 0 30px rgba(245,197,24,0.8); }
+  @keyframes scoreFloat{0%{opacity:1;transform:translate(-50%,-50%) scale(0.5)}50%{opacity:1;transform:translate(-50%,-80%) scale(1.2)}100%{opacity:0;transform:translate(-50%,-120%) scale(1)}}
+  .confetti-piece { position:fixed; width:8px; height:8px; border-radius:2px; pointer-events:none; z-index:9999; animation:confettiFall var(--dur) ease-in forwards; }
+  @keyframes confettiFall{0%{transform:translate(0,0) rotate(0deg);opacity:1}100%{transform:translate(var(--dx),100vh) rotate(720deg);opacity:0}}
+  .fin-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%}
+  .stat-box{background:var(--glass);border:1px solid var(--glass-border);border-radius:14px;padding:16px;text-align:center}
+  .stat-box .val{font-size:1.6rem;font-weight:900;color:var(--gold)}
+  .stat-box .lbl{font-size:0.75rem;color:rgba(240,244,255,0.5);margin-top:4px}
+  #waiting-count{font-weight:900;color:var(--teal)}
+  .player-waiting-name{font-size:0.8rem;color:rgba(240,244,255,0.5)}
+</style>
+</head>
+<body>
+<div class="stars" id="stars"></div>
+
+<div class="modal-overlay" id="qrModal" onclick="closeQrModal()">
+  <div class="modal-inner" onclick="event.stopPropagation()">
+    <div id="qrcode-big"></div>
+    <p style="margin-top:12px;color:#666;font-family:'Cairo',sans-serif;font-size:0.85rem">اضغط خارج النافذة للإغلاق</p>
+  </div>
+</div>
+
+<div id="app">
+
+<!-- SCREEN: MODE -->
+<div class="screen active" id="screen-mode">
+  <div class="game-logo">
+    <span class="icon">💰</span>
+    <h1>منافع الاستثمار</h1>
+    <p>لعبة تعليمية تنافسية</p>
+  </div>
+  <div class="card" style="max-width:500px">
+    <div class="card-title">🎮 اختر دورك</div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <button class="btn btn-gold" style="width:100%;justify-content:center;font-size:1.1rem;padding:18px" onclick="startHost()">🖥️ أنا المضيف (عرض اللعبة)</button>
+      <button class="btn btn-teal" style="width:100%;justify-content:center;font-size:1.1rem;padding:18px" onclick="showJoin()">👤 أنا لاعب (انضمام)</button>
+    </div>
+    <div class="explainer" style="margin-top:16px">
+      <strong style="color:var(--gold)">📌 كيف تلعب؟</strong><br>
+      المضيف يعرض الشاشة على التلفاز أو البروجكتور، واللاعبون يمسحون رمز QR بهاتفهم وينضمون إلى اللعبة. اللعبة تعمل كاملاً في المتصفح بدون إنترنت إضافي بعد الفتح.
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN: HOST LOBBY -->
+<div class="screen" id="screen-host-lobby">
+  <div class="game-logo"><span class="icon">🎯</span><h1>لوبي اللعبة</h1></div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">📱 رمز الانضمام</div>
+      <div class="qr-container">
+        <div class="section-label">رمز الغرفة</div>
+        <div class="game-code-display" id="roomCodeDisplay">----</div>
+        <div id="qrcode" onclick="openQrModal()" title="اضغط لتكبير الرمز"></div>
+        <div class="qr-hint">🔍 اضغط على الرمز لتكبيره<br>أو شارك كود الغرفة</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">👥 اللاعبون (<span id="waiting-count">0</span>)</div>
+      <div class="players-grid" id="players-grid">
+        <div class="player-waiting-name" style="grid-column:1/-1;text-align:center;padding:20px">في انتظار الانضمام...<div class="waiting-pulse"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="max-width:500px">
+    <div class="card-title">⚙️ إعدادات اللعبة</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div><div class="section-label">وقت كل سؤال (ثانية)</div><input type="text" id="timePerQ" value="20" style="text-align:center"></div>
+      <div><div class="section-label">نقاط الإجابة الصحيحة</div><input type="text" id="pointsPerQ" value="100" style="text-align:center"></div>
+    </div>
+    <button class="btn btn-gold" style="width:100%;justify-content:center;font-size:1.1rem" onclick="startGame()">🚀 ابدأ اللعبة</button>
+    <p style="font-size:0.78rem;color:rgba(240,244,255,0.4);text-align:center;margin-top:10px">يمكن البدء بدون لاعبين (اختبار)</p>
+  </div>
+</div>
+
+<!-- SCREEN: JOIN -->
+<div class="screen" id="screen-join">
+  <div class="game-logo"><span class="icon">🙋</span><h1>انضمام للعبة</h1></div>
+  <div class="card" style="max-width:480px">
+    <div class="card-title">🔑 أدخل كود الغرفة</div>
+    <input type="text" id="joinCode" placeholder="أدخل الكود هنا" maxlength="6" style="text-align:center;font-size:1.5rem;letter-spacing:0.2em;font-weight:900">
+    <button class="btn btn-teal" style="width:100%;justify-content:center;margin-top:12px" onclick="validateRoomCode()">التالي ←</button>
+  </div>
+  <div class="card" id="joinFormCard" style="max-width:480px;display:none">
+    <div class="card-title">✍️ معلوماتك</div>
+    <div style="margin-bottom:14px">
+      <div class="section-label">اسمك في اللعبة</div>
+      <input type="text" id="playerName" placeholder="اكتب اسمك..." maxlength="20">
+    </div>
+    <div>
+      <div class="section-label">اختر أو أنشئ فريقاً</div>
+      <div class="teams-grid" id="teams-grid"></div>
+      <div style="margin-top:12px">
+        <div class="section-label">إنشاء فريق جديد</div>
+        <div class="new-team-input">
+          <input type="text" id="newTeamName" placeholder="اسم الفريق الجديد..." maxlength="20" style="flex:1">
+          <button class="btn btn-outline" onclick="createNewTeam()" style="white-space:nowrap;padding:12px 16px">+ أضف</button>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-gold" style="width:100%;justify-content:center;margin-top:20px;font-size:1.1rem" onclick="joinGame()">✅ انضم للعبة</button>
+  </div>
+  <button class="btn btn-outline" onclick="showScreen('screen-mode')" style="margin-top:10px">← رجوع</button>
+</div>
+
+<!-- SCREEN: PLAYER WAITING -->
+<div class="screen" id="screen-player-waiting">
+  <div class="game-logo"><span class="icon">⏳</span><h1>في الانتظار...</h1><p id="player-welcome-msg">أهلاً! انتظر بدء اللعبة</p></div>
+  <div class="card" style="max-width:400px;text-align:center">
+    <div id="player-team-info" style="margin-bottom:16px"></div>
+    <div style="font-size:1rem;color:rgba(240,244,255,0.6)">المضيف سيبدأ اللعبة قريباً</div>
+    <div class="waiting-pulse" style="margin-top:20px"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+  </div>
+</div>
+
+<!-- SCREEN: HOST QUESTION -->
+<div class="screen" id="screen-host-question">
+  <div class="question-header">
+    <div><div class="q-counter" id="qCounter">السؤال 1 / 8</div><div style="font-size:0.8rem;color:rgba(240,244,255,0.4)" id="qCategory"></div></div>
+    <div class="timer-circle" id="timerCircle">20</div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:100%"></div></div>
+  <div class="question-box" id="hostQuestion">...</div>
+  <div class="options-grid" id="hostOptions"></div>
+  <div class="feedback-banner" id="hostFeedback"></div>
+  <div class="correct-answer-reveal" id="correctReveal"></div>
+  <div class="card" style="width:100%">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+      <div><span style="font-size:0.85rem;color:rgba(240,244,255,0.5)">أجاب: </span><span id="answeredCount" style="font-weight:700;color:var(--teal)">0</span><span style="font-size:0.85rem;color:rgba(240,244,255,0.5)"> / <span id="totalPlayers">0</span></span></div>
+      <button class="btn btn-gold" id="nextBtn" onclick="nextQuestion()" style="display:none">التالي ←</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN: PLAYER QUESTION -->
+<div class="screen" id="screen-player-question">
+  <div class="question-header">
+    <div><div class="q-counter" id="pqCounter">السؤال 1</div><div style="font-size:0.8rem;color:rgba(240,244,255,0.4)" id="myScore">نقاطك: 0</div></div>
+    <div class="timer-circle" id="pTimerCircle">20</div>
+  </div>
+  <div class="question-box" id="playerQuestion">...</div>
+  <div class="options-grid" id="playerOptions"></div>
+  <div class="feedback-banner" id="playerFeedback"></div>
+  <div class="correct-answer-reveal" id="pCorrectReveal"></div>
+</div>
+
+<!-- SCREEN: HOST SCORE -->
+<div class="screen" id="screen-host-score">
+  <div class="game-logo"><span class="icon">🏆</span><h1>لوحة النتائج</h1></div>
+  <div class="tabs" id="scoreTabs">
+    <button class="tab active" onclick="showScoreTab('players')">👤 اللاعبون</button>
+    <button class="tab" onclick="showScoreTab('teams')">🏳️ الفرق</button>
+  </div>
+  <div id="tab-players" class="leaderboard" style="width:100%"></div>
+  <div id="tab-teams" class="leaderboard" style="width:100%;display:none"></div>
+  <div style="display:flex;gap:12px;width:100%;justify-content:center;flex-wrap:wrap">
+    <button class="btn btn-gold" onclick="continueFromScore()" id="continueBtn">التالي ←</button>
+    <button class="btn btn-outline" onclick="restartGame()">🔄 إعادة اللعبة</button>
+  </div>
+</div>
+
+<!-- SCREEN: PLAYER SCORE -->
+<div class="screen" id="screen-player-score">
+  <div class="game-logo"><span class="icon">📊</span><h1>النتائج</h1></div>
+  <div class="card" style="max-width:420px;text-align:center">
+    <div id="myRankDisplay"></div>
+    <div id="myScoreDisplay" style="font-size:2.5rem;font-weight:900;color:var(--gold);margin:12px 0"></div>
+    <div id="myTeamDisplay" style="font-size:0.9rem;color:rgba(240,244,255,0.6)"></div>
+  </div>
+  <div class="leaderboard" style="max-width:480px;width:100%" id="playerScoreList"></div>
+  <p style="font-size:0.8rem;color:rgba(240,244,255,0.4)">في انتظار القرار التالي من المضيف...</p>
+</div>
+
+<!-- SCREEN: FINAL -->
+<div class="screen" id="screen-final">
+  <div class="game-logo"><span class="icon">🎉</span><h1>نهاية اللعبة!</h1></div>
+  <div class="fin-stats" id="finStats"></div>
+  <div class="card" style="width:100%">
+    <div class="card-title">🥇 الفائز</div>
+    <div id="winnerDisplay"></div>
+  </div>
+  <div class="card" style="width:100%">
+    <div class="tabs" id="finalTabs">
+      <button class="tab active" onclick="showFinalTab('players')">👤 اللاعبون</button>
+      <button class="tab" onclick="showFinalTab('teams')">🏳️ الفرق</button>
+    </div>
+    <div id="final-tab-players" class="leaderboard" style="margin-top:12px"></div>
+    <div id="final-tab-teams" class="leaderboard" style="margin-top:12px;display:none"></div>
+  </div>
+  <button class="btn btn-gold" onclick="restartGame()" style="font-size:1.1rem;padding:16px 40px">🔄 العب مجدداً</button>
+</div>
+
+</div>
+
+<script>
+// Stars
+(function(){
+  const c=document.getElementById('stars');
+  for(let i=0;i<80;i++){
+    const s=document.createElement('div');s.className='star';
+    s.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*4}s;--o:${0.2+Math.random()*0.5};animation-delay:${Math.random()*4}s;`;
+    c.appendChild(s);
+  }
+})();
+
+const QUESTIONS=[
+  {q:"ما التعريف الصحيح للاستثمار في المجال الاقتصادي؟",opts:["توظيف الأموال في أصول بهدف تحقيق عوائد مستقبلية","إنفاق الأموال على الاحتياجات اليومية","الاحتفاظ بالأموال في المنزل","تبرع الأموال للمجتمع"],correct:0,cat:"المفاهيم الأساسية"},
+  {q:"ما أهم منافع الاستثمار للفرد على المدى البعيد؟",opts:["تراكم الثروة وتأمين المستقبل المالي","الحصول على قرض من البنك","تخفيض الضرائب المدفوعة","شراء البضائع بالجملة"],correct:0,cat:"منافع الاستثمار"},
+  {q:"كيف يُساهم الاستثمار في تنمية الاقتصاد الوطني؟",opts:["يزيد الإنتاج ويخلق فرص عمل جديدة","يرفع أسعار المنتجات الأساسية","يقلل من حجم الصادرات","يزيد الاعتماد على الاستيراد"],correct:0,cat:"الاقتصاد الكلي"},
+  {q:"ما المقصود بمبدأ 'تنويع الاستثمار'؟",opts:["توزيع الأموال على قطاعات مختلفة لتقليل المخاطر","استثمار كل الأموال في قطاع واحد رابح","الاستثمار في دولة واحدة فقط","تجنب الاستثمار في الأسهم"],correct:0,cat:"إدارة المخاطر"},
+  {q:"ما الفرق الرئيسي بين الادخار والاستثمار؟",opts:["الادخار يحافظ على المال والاستثمار يُنمّيه","الادخار أكثر ربحاً من الاستثمار","الاستثمار يعني إنفاق الأموال فوراً","لا فرق بينهما"],correct:0,cat:"المفاهيم الأساسية"},
+  {q:"أيٌّ من التالي يُعدّ من أنواع الاستثمار؟",opts:["شراء أسهم في شركة","دفع فاتورة الكهرباء","شراء ملابس جديدة","السفر للترفيه"],correct:0,cat:"أنواع الاستثمار"},
+  {q:"ما دور الاستثمار في مكافحة التضخم الاقتصادي؟",opts:["يُحقق عوائد تفوق معدل التضخم مما يحمي القوة الشرائية","يزيد من حدة التضخم","ليس له علاقة بالتضخم","يرفع الأسعار بشكل مباشر"],correct:0,cat:"منافع الاستثمار"},
+  {q:"ما العائد الذي يحصل عليه المستثمر من الأسهم بالإضافة إلى ارتفاع السعر؟",opts:["الأرباح الموزعة (الدِّيفيدند)","الراتب الشهري","القرض المصرفي","الإعانة الحكومية"],correct:0,cat:"أنواع الاستثمار"}
+];
+
+const TEAM_COLORS=[
+  {name:"النسور 🦅",color:"#FF6B6B",bg:"rgba(255,107,107,0.15)",icon:"🦅"},
+  {name:"الصقور ⚡",color:"#F5C518",bg:"rgba(245,197,24,0.15)",icon:"⚡"},
+  {name:"الدلافين 🐬",color:"#00C9A7",bg:"rgba(0,201,167,0.15)",icon:"🐬"},
+  {name:"الأسود 🦁",color:"#FF8C42",bg:"rgba(255,140,66,0.15)",icon:"🦁"},
+];
+
+let state={
+  roomCode:'',isHost:false,
+  teams:TEAM_COLORS.map(t=>({...t,members:[]})),
+  players:[],myPlayerId:null,currentQ:0,phase:'lobby',
+  timer:null,timeLeft:20,mySelectedAnswer:null,
+  settings:{timePerQ:20,pointsPerQ:100}
+};
+
+function saveState(){localStorage.setItem('quizGame_'+state.roomCode,JSON.stringify({players:state.players,teams:state.teams,currentQ:state.currentQ,phase:state.phase}));}
+function loadSharedState(){const r=localStorage.getItem('quizGame_'+state.roomCode);return r?JSON.parse(r):null;}
+
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);}
+function genCode(){return Math.random().toString(36).substring(2,8).toUpperCase();}
+function getTeamStyle(idx){if(idx<0||idx>=state.teams.length)return{color:'#888',bg:'rgba(128,128,128,0.1)',name:'—',icon:'?'};return state.teams[idx];}
+function myPlayer(){return state.players.find(p=>p.id===state.myPlayerId);}
+
+// HOST
+function startHost(){
+  state.isHost=true;state.roomCode=genCode();state.players=[];state.currentQ=0;state.phase='lobby';
+  state.teams=TEAM_COLORS.map(t=>({...t,members:[]}));saveState();
+  document.getElementById('roomCodeDisplay').textContent=state.roomCode;
+  document.getElementById('qrcode').innerHTML='';document.getElementById('qrcode-big').innerHTML='';
+  const joinUrl=window.location.href.split('?')[0]+'?join='+state.roomCode;
+  new QRCode(document.getElementById('qrcode'),{text:joinUrl,width:160,height:160,colorDark:'#0A1628',colorLight:'#FFFFFF'});
+  new QRCode(document.getElementById('qrcode-big'),{text:joinUrl,width:Math.min(window.innerWidth*0.8,320),height:Math.min(window.innerWidth*0.8,320),colorDark:'#0A1628',colorLight:'#FFFFFF'});
+  showScreen('screen-host-lobby');startPolling();
+}
+
+let pollInterval;
+function startPolling(){
+  clearInterval(pollInterval);
+  pollInterval=setInterval(()=>{
+    pollSharedState();
+    if(state.isHost)updatePlayersList();
+  },800);
+}
+
+function pollSharedState(){
+  if(!state.roomCode)return;
+  const shared=loadSharedState();if(!shared)return;
+  if(state.phase==='player-waiting'&&shared.phase==='question'){state.players=shared.players;state.teams=shared.teams;state.currentQ=shared.currentQ;state.phase='player-question';state.mySelectedAnswer=null;showPlayerQuestion();return;}
+  if(state.phase==='player-question'&&shared.phase==='score'){state.players=shared.players;state.phase='player-score';showPlayerScore();return;}
+  if(state.phase==='player-score'&&shared.phase==='question'){state.players=shared.players;state.teams=shared.teams;state.currentQ=shared.currentQ;state.phase='player-question';state.mySelectedAnswer=null;showPlayerQuestion();return;}
+  if((state.phase==='player-score'||state.phase==='player-question')&&shared.phase==='final'){state.players=shared.players;state.phase='final';showScreen('screen-final');renderFinal();return;}
+  if(state.phase==='player-waiting'){state.players=shared.players;state.teams=shared.teams;}
+  if(state.isHost&&shared){state.players=shared.players;updateAnsweredCount();}
+}
+
+function updatePlayersList(){
+  const shared=loadSharedState();if(shared){state.players=shared.players;state.teams=shared.teams;}
+  document.getElementById('waiting-count').textContent=state.players.length;
+  const grid=document.getElementById('players-grid');
+  if(state.players.length===0){grid.innerHTML='<div class="player-waiting-name" style="grid-column:1/-1;text-align:center;padding:20px">في انتظار الانضمام...<div class="waiting-pulse"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>';return;}
+  grid.innerHTML=state.players.map(p=>{const t=getTeamStyle(p.teamIndex);return`<div class="player-chip"><div class="player-avatar" style="background:${t.color}20;color:${t.color}">${p.name.charAt(0)}</div><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name}</span><span class="team-badge" style="background:${t.bg};color:${t.color}">${t.icon}</span></div>`;}).join('');
+}
+
+function openQrModal(){document.getElementById('qrModal').classList.add('open');}
+function closeQrModal(){document.getElementById('qrModal').classList.remove('open');}
+
+function startGame(){
+  state.settings.timePerQ=parseInt(document.getElementById('timePerQ').value)||20;
+  state.settings.pointsPerQ=parseInt(document.getElementById('pointsPerQ').value)||100;
+  state.currentQ=0;state.phase='question';saveState();showHostQuestion();
+}
+
+function showHostQuestion(){
+  showScreen('screen-host-question');
+  const q=QUESTIONS[state.currentQ];
+  document.getElementById('qCounter').textContent=`السؤال ${state.currentQ+1} / ${QUESTIONS.length}`;
+  document.getElementById('qCategory').textContent=q.cat;
+  document.getElementById('hostQuestion').textContent=q.q;
+  document.getElementById('answeredCount').textContent='0';
+  document.getElementById('totalPlayers').textContent=state.players.length;
+  document.getElementById('nextBtn').style.display='none';
+  document.getElementById('hostFeedback').className='feedback-banner';
+  document.getElementById('correctReveal').className='correct-answer-reveal';
+  const labels=['أ','ب','ج','د'];
+  document.getElementById('hostOptions').innerHTML=q.opts.map((o,i)=>`<button class="option-btn" id="hopt-${i}" disabled><span class="option-label">${labels[i]}</span>${o}</button>`).join('');
+  state.phase='question';saveState();startTimer(true);
+}
+
+function startTimer(isHost){
+  clearInterval(state.timer);state.timeLeft=state.settings.timePerQ;
+  const circleId=isHost?'timerCircle':'pTimerCircle';const totalTime=state.settings.timePerQ;
+  const circle=document.getElementById(circleId);const fill=document.getElementById('progressFill');
+  if(circle){circle.textContent=state.timeLeft;circle.classList.remove('urgent');}
+  if(fill)fill.style.width='100%';
+  state.timer=setInterval(()=>{
+    state.timeLeft--;
+    if(circle){circle.textContent=state.timeLeft;if(state.timeLeft<=5)circle.classList.add('urgent');}
+    if(fill)fill.style.width=(state.timeLeft/totalTime*100)+'%';
+    if(state.timeLeft<=0){clearInterval(state.timer);if(isHost)revealAnswer();}
+  },1000);
+}
+
+function revealAnswer(){
+  const q=QUESTIONS[state.currentQ];const labels=['أ','ب','ج','د'];
+  q.opts.forEach((o,i)=>{const el=document.getElementById('hopt-'+i);if(el)el.classList.add(i===q.correct?'correct':'wrong');});
+  const reveal=document.getElementById('correctReveal');
+  reveal.textContent=`✅ الإجابة الصحيحة: ${labels[q.correct]} - ${q.opts[q.correct]}`;
+  reveal.classList.add('show');
+  document.getElementById('nextBtn').style.display='flex';
+  state.phase='score';saveState();
+}
+
+function updateAnsweredCount(){
+  const cnt=state.players.filter(p=>p.answers&&p.answers[state.currentQ]!==undefined).length;
+  const el=document.getElementById('answeredCount');if(el)el.textContent=cnt;
+}
+
+function nextQuestion(){
+  clearInterval(state.timer);
+  if(state.currentQ>=QUESTIONS.length-1){endGame();return;}
+  showHostScore();
+}
+
+function showHostScore(){
+  showScreen('screen-host-score');state.phase='score';saveState();
+  document.getElementById('continueBtn').textContent=state.currentQ>=QUESTIONS.length-1?'🏁 النتيجة النهائية':'التالي ←';
+  renderLeaderboard('tab-players');renderTeamLeaderboard('tab-teams');showScoreTab('players');
+}
+
+function continueFromScore(){
+  if(state.currentQ>=QUESTIONS.length-1){endGame();return;}
+  state.currentQ++;state.phase='question';saveState();showHostQuestion();
+}
+
+function endGame(){state.phase='final';saveState();showScreen('screen-final');renderFinal();launchConfetti();}
+
+// SCOREBOARDS
+function getSortedPlayers(){return [...state.players].sort((a,b)=>(b.score||0)-(a.score||0));}
+function getTeamScores(){return state.teams.map((t,i)=>{const members=state.players.filter(p=>p.teamIndex===i);const total=members.reduce((s,p)=>s+(p.score||0),0);return{...t,total,memberCount:members.length};}).filter(t=>t.memberCount>0).sort((a,b)=>b.total-a.total);}
+
+function renderLeaderboard(containerId){
+  const sorted=getSortedPlayers();const el=document.getElementById(containerId);
+  el.innerHTML=sorted.map((p,i)=>{const t=getTeamStyle(p.teamIndex);const rankClass=i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-other';return`<div class="lb-item" style="animation-delay:${i*0.05}s"><div class="lb-rank ${rankClass}">${i+1}</div><div class="player-avatar" style="background:${t.color}20;color:${t.color}">${p.name.charAt(0)}</div><div class="lb-info"><div class="lb-name">${p.name}</div><div class="lb-team">${t.icon} ${t.name}</div></div><div class="lb-score">${p.score||0}</div></div>`;}).join('')||'<p style="text-align:center;opacity:0.4;padding:20px">لا يوجد لاعبون بعد</p>';
+}
+
+function renderTeamLeaderboard(containerId){
+  const teams=getTeamScores();const el=document.getElementById(containerId);
+  el.innerHTML=teams.map((t,i)=>{const rankClass=i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-other';return`<div class="team-lb-item" style="background:${t.bg};border:1px solid ${t.color}30;animation-delay:${i*0.07}s"><div class="lb-rank ${rankClass}">${i+1}</div><div style="font-size:1.5rem">${t.icon}</div><div class="lb-info"><div class="lb-name">${t.name}</div><div class="lb-team">${t.memberCount} أعضاء</div></div><div class="lb-score" style="color:${t.color}">${t.total}</div></div>`;}).join('')||'<p style="text-align:center;opacity:0.4;padding:20px">لا فرق بعد</p>';
+}
+
+function showScoreTab(tab){
+  document.getElementById('tab-players').style.display=tab==='players'?'block':'none';
+  document.getElementById('tab-teams').style.display=tab==='teams'?'block':'none';
+  document.querySelectorAll('#scoreTabs .tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&tab==='players')||(i===1&&tab==='teams')));
+}
+function showFinalTab(tab){
+  document.getElementById('final-tab-players').style.display=tab==='players'?'block':'none';
+  document.getElementById('final-tab-teams').style.display=tab==='teams'?'block':'none';
+  document.querySelectorAll('#finalTabs .tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&tab==='players')||(i===1&&tab==='teams')));
+}
+
+function renderFinal(){
+  const sorted=getSortedPlayers();const winner=sorted[0];const teams=getTeamScores();const topTeam=teams[0];
+  document.getElementById('finStats').innerHTML=`<div class="stat-box"><div class="val">${QUESTIONS.length}</div><div class="lbl">أسئلة</div></div><div class="stat-box"><div class="val">${state.players.length}</div><div class="lbl">لاعبون</div></div><div class="stat-box"><div class="val">${state.settings.pointsPerQ*QUESTIONS.length}</div><div class="lbl">أقصى نقطة</div></div>`;
+  if(winner){const t=getTeamStyle(winner.teamIndex);document.getElementById('winnerDisplay').innerHTML=`<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap"><div style="font-size:3rem">🥇</div><div class="player-avatar" style="width:56px;height:56px;font-size:1.5rem;background:${t.color}20;color:${t.color}">${winner.name.charAt(0)}</div><div><div style="font-size:1.4rem;font-weight:900">${winner.name}</div><div style="color:${t.color};font-size:0.9rem">${t.icon} ${t.name}</div></div><div style="margin-right:auto;font-size:2rem;font-weight:900;color:var(--gold)">${winner.score} نقطة</div></div>${topTeam?`<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--glass-border)"><span style="opacity:0.5;font-size:0.85rem">أفضل فريق: </span><span style="font-weight:700;color:${topTeam.color}">${topTeam.icon} ${topTeam.name} — ${topTeam.total} نقطة إجمالية</span></div>`:''}`;
+  }else{document.getElementById('winnerDisplay').innerHTML='<p style="opacity:0.5">لا يوجد لاعبون</p>';}
+  renderLeaderboard('final-tab-players');renderTeamLeaderboard('final-tab-teams');showFinalTab('players');
+}
+
+function restartGame(){
+  clearInterval(state.timer);clearInterval(pollInterval);
+  state={roomCode:'',isHost:false,teams:TEAM_COLORS.map(t=>({...t,members:[]})),players:[],myPlayerId:null,currentQ:0,phase:'lobby',timer:null,timeLeft:20,mySelectedAnswer:null,settings:{timePerQ:20,pointsPerQ:100}};
+  showScreen('screen-mode');
+}
+
+// JOIN
+function showJoin(){showScreen('screen-join');}
+
+function validateRoomCode(){
+  const code=document.getElementById('joinCode').value.trim().toUpperCase();
+  if(!code||code.length<4){alert('أدخل كود الغرفة الصحيح');return;}
+  const shared=localStorage.getItem('quizGame_'+code);
+  if(!shared){alert('لم يتم العثور على غرفة بهذا الكود. تأكد من الكود أو أن المضيف قد بدأ.');return;}
+  state.roomCode=code;const data=JSON.parse(shared);state.teams=data.teams;
+  document.getElementById('joinFormCard').style.display='';renderTeamSelection();
+}
+
+function renderTeamSelection(){
+  document.getElementById('teams-grid').innerHTML=state.teams.map((t,i)=>`<div class="team-card" id="tc-${i}" style="background:${t.bg};border-color:${t.color}40" onclick="selectTeam(${i})"><span class="team-icon">${t.icon}</span><div class="team-name" style="color:${t.color}">${t.name}</div><div class="member-count">${t.members?t.members.length:0} أعضاء</div></div>`).join('');
+}
+
+let selectedTeamIndex=-1;
+function selectTeam(i){selectedTeamIndex=i;document.querySelectorAll('.team-card').forEach((c,j)=>c.classList.toggle('selected',j===i));}
+
+function createNewTeam(){
+  const name=document.getElementById('newTeamName').value.trim();
+  if(!name){alert('اكتب اسم الفريق');return;}
+  const icons=['🌟','🔥','💎','🚀','🎯','🌊','🏔️','⚡'];
+  const colors=['#A855F7','#EC4899','#14B8A6','#F59E0B','#84CC16','#3B82F6'];
+  const idx=state.teams.length;const col=colors[idx%colors.length];
+  state.teams.push({name:name+' '+(icons[idx%icons.length]),color:col,bg:col+'20',icon:icons[idx%icons.length],members:[]});
+  renderTeamSelection();selectTeam(idx);document.getElementById('newTeamName').value='';
+}
+
+function joinGame(){
+  const name=document.getElementById('playerName').value.trim();
+  if(!name){alert('اكتب اسمك');return;}
+  if(selectedTeamIndex<0){alert('اختر فريقاً');return;}
+  const shared=loadSharedState();if(!shared){alert('انتهت الغرفة أو حدث خطأ');return;}
+  state.players=shared.players||[];state.teams=shared.teams||state.teams;
+  const id=Date.now().toString(36)+Math.random().toString(36).slice(2,6);state.myPlayerId=id;
+  const player={id,name,teamIndex:selectedTeamIndex,score:0,answers:[]};
+  state.players.push(player);
+  if(!state.teams[selectedTeamIndex].members)state.teams[selectedTeamIndex].members=[];
+  state.teams[selectedTeamIndex].members.push(id);saveState();
+  document.getElementById('player-welcome-msg').textContent=`أهلاً ${name}! 🎉`;
+  const t=getTeamStyle(selectedTeamIndex);
+  document.getElementById('player-team-info').innerHTML=`<div style="font-size:2rem">${t.icon}</div><div style="font-weight:700;color:${t.color};margin-top:6px">${t.name}</div>`;
+  state.phase='player-waiting';showScreen('screen-player-waiting');startPolling();
+}
+
+// PLAYER QUESTION
+function showPlayerQuestion(){
+  showScreen('screen-player-question');
+  const q=QUESTIONS[state.currentQ];
+  document.getElementById('pqCounter').textContent=`السؤال ${state.currentQ+1} / ${QUESTIONS.length}`;
+  const me=myPlayer();document.getElementById('myScore').textContent=`نقاطك: ${me?me.score||0:0}`;
+  document.getElementById('playerQuestion').textContent=q.q;
+  document.getElementById('playerFeedback').className='feedback-banner';
+  document.getElementById('pCorrectReveal').className='correct-answer-reveal';
+  state.mySelectedAnswer=null;
+  const labels=['أ','ب','ج','د'];
+  document.getElementById('playerOptions').innerHTML=q.opts.map((o,i)=>`<button class="option-btn" id="popt-${i}" onclick="submitAnswer(${i})"><span class="option-label">${labels[i]}</span>${o}</button>`).join('');
+  startTimer(false);
+  const revealPoll=setInterval(()=>{const shared=loadSharedState();if(shared&&shared.phase==='score'){clearInterval(revealPoll);clearInterval(state.timer);showPlayerReveal();}},800);
+}
+
+function submitAnswer(i){
+  if(state.mySelectedAnswer!==null)return;state.mySelectedAnswer=i;clearInterval(state.timer);
+  const q=QUESTIONS[state.currentQ];const isCorrect=i===q.correct;
+  const timeBonus=Math.round(state.timeLeft/state.settings.timePerQ*state.settings.pointsPerQ*0.5);
+  const pts=isCorrect?state.settings.pointsPerQ+timeBonus:0;
+  const shared=loadSharedState();
+  if(shared){state.players=shared.players;const me=state.players.find(p=>p.id===state.myPlayerId);if(me){if(!me.answers)me.answers=[];me.answers[state.currentQ]=i;me.score=(me.score||0)+pts;}state.teams=shared.teams;saveState();}
+  document.querySelectorAll('.option-btn').forEach(b=>{b.disabled=true;});
+  const fb=document.getElementById('playerFeedback');
+  if(isCorrect){document.getElementById('popt-'+i).classList.add('selected-correct');fb.textContent=`🎉 إجابة صحيحة! +${pts} نقطة`;fb.className='feedback-banner correct-fb show';flashScore('+'+pts);}
+  else{document.getElementById('popt-'+i).classList.add('selected-wrong');fb.textContent='❌ إجابة خاطئة';fb.className='feedback-banner wrong-fb show';}
+}
+
+function showPlayerReveal(){
+  const q=QUESTIONS[state.currentQ];const labels=['أ','ب','ج','د'];
+  document.querySelectorAll('.option-btn').forEach((b,i)=>{b.disabled=true;if(i===q.correct)b.classList.add('correct');});
+  const reveal=document.getElementById('pCorrectReveal');
+  reveal.textContent=`✅ الإجابة الصحيحة: ${labels[q.correct]} - ${q.opts[q.correct]}`;reveal.classList.add('show');
+}
+
+function showPlayerScore(){
+  showScreen('screen-player-score');
+  const sorted=getSortedPlayers();const me=myPlayer();const myRank=sorted.findIndex(p=>p.id===state.myPlayerId)+1;
+  const t=me?getTeamStyle(me.teamIndex):null;
+  const rankEmoji=myRank===1?'🥇':myRank===2?'🥈':myRank===3?'🥉':'#'+myRank;
+  document.getElementById('myRankDisplay').innerHTML=`<div style="font-size:2.5rem">${rankEmoji}</div><div style="opacity:0.6;font-size:0.9rem">مرتبتك بين ${state.players.length} لاعبين</div>`;
+  document.getElementById('myScoreDisplay').textContent=(me?me.score||0:0)+' نقطة';
+  document.getElementById('myTeamDisplay').innerHTML=t?`${t.icon} ${t.name}`:'';
+  document.getElementById('playerScoreList').innerHTML=sorted.slice(0,5).map((p,i)=>{const pt=getTeamStyle(p.teamIndex);const rankClass=i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-other';const isMe=p.id===state.myPlayerId;return`<div class="lb-item" style="${isMe?'border-color:var(--gold);background:rgba(245,197,24,0.08);':''}animation-delay:${i*0.07}s"><div class="lb-rank ${rankClass}">${i+1}</div><div class="player-avatar" style="background:${pt.color}20;color:${pt.color}">${p.name.charAt(0)}</div><div class="lb-info"><div class="lb-name">${p.name}${isMe?' <span style="font-size:0.75rem;color:var(--gold)">(أنت)</span>':''}</div><div class="lb-team">${pt.icon} ${pt.name}</div></div><div class="lb-score">${p.score||0}</div></div>`;}).join('');
+}
+
+function flashScore(text){const el=document.createElement('div');el.className='score-flash';el.textContent=text;document.body.appendChild(el);setTimeout(()=>el.remove(),1200);}
+
+function launchConfetti(){
+  const colors=['#F5C518','#00C9A7','#FF6B6B','#9B59B6','#FF8C42','#3B82F6'];
+  for(let i=0;i<80;i++){setTimeout(()=>{const el=document.createElement('div');el.className='confetti-piece';el.style.cssText=`left:${10+Math.random()*80}%;top:-10px;background:${colors[Math.floor(Math.random()*colors.length)]};--dx:${(Math.random()-0.5)*200}px;--dur:${1.5+Math.random()*2}s;border-radius:${Math.random()>0.5?'50%':'2px'};width:${6+Math.random()*10}px;height:${6+Math.random()*10}px;`;document.body.appendChild(el);setTimeout(()=>el.remove(),3500);},i*40);}
+}
+
+// URL param
+window.addEventListener('load',()=>{
+  const params=new URLSearchParams(window.location.search);const code=params.get('join');
+  if(code){document.getElementById('joinCode').value=code;showScreen('screen-join');validateRoomCode();}
+});
+
+document.getElementById('joinCode').addEventListener('keydown',e=>{if(e.key==='Enter')validateRoomCode();});
+document.getElementById('playerName').addEventListener('keydown',e=>{if(e.key==='Enter')joinGame();});
+document.getElementById('newTeamName').addEventListener('keydown',e=>{if(e.key==='Enter')createNewTeam();});
+</script>
+</body>
+</html>
