@@ -16,6 +16,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <!-- Canvas Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- PeerJS for Real-time Cloud P2P Networking -->
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 
     <script>
         tailwind.config = {
@@ -167,11 +169,11 @@
                 </button>
 
                 <div id="roleBadge" class="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-najd-clayBg border border-najd-gold/40 text-xs font-semibold text-najd-sand">
-                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                    <span id="roleText">نمط العرض</span>
+                    <span id="connectionDot" class="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></span>
+                    <span id="roleText">جاري الاتصال...</span>
                 </div>
 
-                <button onclick="switchRoleModal()" class="text-xs bg-najd-mud/60 hover:bg-najd-mud px-3 py-1.5 rounded-md text-najd-sand border border-najd-mudLight transition">
+                <button id="switchRoleBtn" onclick="switchRoleModal()" class="text-xs bg-najd-mud/60 hover:bg-najd-mud px-3 py-1.5 rounded-md text-najd-sand border border-najd-mudLight transition">
                     <i class="fa-solid fa-repeat me-1"></i> تبديل النمط
                 </button>
             </div>
@@ -192,7 +194,7 @@
                     </span>
                     <h2 class="font-amiri text-3xl sm:text-5xl font-bold text-najd-sand mb-4">اختر نمط التشغيل</h2>
                     <p class="text-najd-sand/80 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
-                        قم باستضافة اللعبة على الشاشة الكبيرة للفصل أو قاعة الفعاليات، أو انضم كلاعب/فريق من خلال الجوال للإجابة مباشرة.
+                        قم باستضافة اللعبة على الشاشة الكبيرة للفصل أو القاعة، أو انضم كلاعب/فريق مباشرةً من جوالك.
                     </p>
                 </div>
 
@@ -205,7 +207,7 @@
                             </div>
                             <h3 class="text-xl font-bold text-najd-gold mb-2">شاشة العرض الرئيسية (Host)</h3>
                             <p class="text-xs text-najd-sand/70 leading-normal">
-                                تعرض الأسئلة، QR Code للانضمام، مؤقت الإجابة، ولوحة المتصدرين المتحركة (FLIP Leaderboard).
+                                الشاشة الكبيرة للمعلم/المدرب: تعرض رمز PIN و QR Code والأسئلة ومؤقت الإجابة وترتيب الفرق.
                             </p>
                         </div>
                         <div class="mt-6 flex items-center text-sm font-bold text-najd-gold group-hover:translate-x-[-4px] transition-transform">
@@ -220,9 +222,9 @@
                             <div class="w-14 h-14 rounded-xl bg-najd-palmGreen/30 border border-green-500 text-green-400 flex items-center justify-center text-2xl mb-4 group-hover:bg-green-600 group-hover:text-white transition">
                                 <i class="fa-solid fa-mobile-screen-button"></i>
                             </div>
-                            <h3 class="text-xl font-bold text-green-400 mb-2">الانضمام من الجوال (Player)</h3>
+                            <h3 class="text-xl font-bold text-green-400 mb-2">انضمام مشارك من الجوال (Player)</h3>
                             <p class="text-xs text-najd-sand/70 leading-normal">
-                                ادخل رمز اللعبة (PIN)، سجل اسمك وفريقك، وأجب على الأسئلة مباشرة من شاشة جوالك.
+                                شاشة خاصة بالجوال: أدخل رمز اللعبة (PIN)، سجل اسمك وفريقك، وأجب مباشرة من الجوال.
                             </p>
                         </div>
                         <div class="mt-6 flex items-center text-sm font-bold text-green-400 group-hover:translate-x-[-4px] transition-transform">
@@ -245,28 +247,28 @@
                     <!-- Left/Top: Huge Game PIN Display -->
                     <div class="flex-1 text-center md:text-right space-y-2">
                         <span class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-najd-mud/60 text-najd-gold text-xs font-bold border border-najd-gold/30">
-                            <i class="fa-solid fa-key"></i> رمز الدخول المباشر
+                            <i class="fa-solid fa-key"></i> رمز دخول اللعبة المباشر (PIN)
                         </span>
-                        <h3 class="text-sm text-najd-sand/80">ادخل الرمز في جوالك أو امسح الـ QR:</h3>
-                        <div id="hostPinDisplay" class="text-6xl sm:text-7xl font-black tracking-widest text-najd-gold font-mono drop-shadow-md my-2">
+                        <h3 class="text-sm text-najd-sand/80">ادخل الرمز في جوالك أو امسح الـ QR للوصول المباشر:</h3>
+                        <div id="hostPinDisplay" class="text-6xl sm:text-8xl font-black tracking-widest text-najd-gold font-mono drop-shadow-md my-2">
                             ------
                         </div>
-                        <p class="text-xs text-najd-sand/60">
-                            رابط المضيف المباشر جاهز ومستضاف على GitHub Pages / Web
+                        <p id="networkStatusText" class="text-xs text-green-400 font-semibold flex items-center justify-center md:justify-start gap-2">
+                            <i class="fa-solid fa-signal animate-pulse"></i> خادم الشبكة السحابية جاهز للاتصال
                         </p>
                     </div>
 
                     <!-- Center: Dynamic QR Code Box -->
                     <div class="bg-white p-4 rounded-xl border-4 border-najd-gold shadow-2xl flex flex-col items-center">
                         <div id="qrcodeCanvas" class="p-1"></div>
-                        <span class="text-[10px] text-gray-800 font-bold mt-2">انضم فوراً بالجوال</span>
+                        <span class="text-[11px] text-gray-900 font-extrabold mt-2">امسح بالجوال للانضمام المباشر</span>
                     </div>
 
                     <!-- Right/Bottom: Controls -->
                     <div class="flex flex-col items-center md:items-end justify-center gap-3 w-full md:w-auto">
-                        <div class="bg-najd-clayBg/80 px-5 py-3 rounded-xl border border-najd-gold/30 text-center w-full">
-                            <div class="text-xs text-najd-sand/70">عدد الانضمامات</div>
-                            <div id="connectedCount" class="text-3xl font-extrabold text-najd-gold">0</div>
+                        <div class="bg-najd-clayBg/80 px-6 py-4 rounded-xl border border-najd-gold/30 text-center w-full">
+                            <div class="text-xs text-najd-sand/70">المشاركون المنضمون</div>
+                            <div id="connectedCount" class="text-4xl font-extrabold text-najd-gold">0</div>
                         </div>
                         <button onclick="startHostQuiz()" id="startQuizBtn" class="btn-najdi w-full py-4 px-8 rounded-xl text-lg flex items-center justify-center gap-2 shadow-xl">
                             <i class="fa-solid fa-play"></i> بدء المسابقة الآن
@@ -279,14 +281,14 @@
             <div class="najdi-card rounded-xl p-5 border border-najd-mud">
                 <div class="flex justify-between items-center mb-4 pb-2 border-b border-najd-mud">
                     <h3 class="font-bold text-lg text-najd-sand flex items-center gap-2">
-                        <i class="fa-solid fa-users text-najd-gold"></i> الفرق واللاعبون المنضمون حالياً
+                        <i class="fa-solid fa-users text-najd-gold"></i> الفرق والفرسان المنضمون في القاعة
                     </h3>
-                    <span class="text-xs text-najd-sand/60">يتم التحديث لحظياً</span>
+                    <span class="text-xs text-najd-sand/60">يتم التحديث لحظياً من أجهزة الجوال</span>
                 </div>
                 <div id="lobbyPlayersList" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 min-h-[120px] max-h-[260px] overflow-y-auto p-1">
                     <div class="col-span-full flex flex-col items-center justify-center py-8 text-najd-sand/40 text-center">
                         <i class="fa-solid fa-spinner fa-spin text-3xl text-najd-gold mb-2"></i>
-                        <p class="text-sm">في انتظار انضمام الأبطال عبر الجوال...</p>
+                        <p class="text-sm">في انتظار انضمام المشاركين عبر الجوال...</p>
                     </div>
                 </div>
             </div>
@@ -303,21 +305,21 @@
                         <i class="fa-solid fa-mobile-screen"></i>
                     </div>
                     <h2 class="font-amiri text-2xl font-bold text-najd-sand">انضمام فرسان الدرعية</h2>
-                    <p class="text-xs text-najd-sand/70">أدخل معلوماتك للالتحاق بالمسابقة التاريخية</p>
+                    <p class="text-xs text-najd-sand/70">أدخل معلوماتك للالتحاق بشاشة المسابقة التاريخية</p>
                 </div>
 
                 <form id="joinForm" onsubmit="handlePlayerJoin(event)" class="space-y-4">
                     <!-- PIN Input -->
                     <div>
                         <label class="block text-xs font-bold text-najd-gold mb-1">رمز اللعبة (PIN مكون من 6 أرقام):</label>
-                        <input type="number" id="inputPin" required placeholder="مثال: 849201 text-center" 
+                        <input type="number" id="inputPin" required placeholder="أدخل الرمز PIN" 
                                class="w-full bg-najd-clayBg border-2 border-najd-mud focus:border-najd-gold text-center text-2xl font-mono tracking-widest text-najd-sand rounded-xl py-2.5 px-4 outline-none transition"
                                oninput="if(this.value.length > 6) this.value = this.value.slice(0,6)">
                     </div>
 
                     <!-- Player Name Input -->
                     <div>
-                        <label class="block text-xs font-bold text-najd-gold mb-1">اسم اللاعب:</label>
+                        <label class="block text-xs font-bold text-najd-gold mb-1">اسم اللاعب/المشارك:</label>
                         <input type="text" id="inputPlayerName" required placeholder="أدخل اسمك الكريم" 
                                class="w-full bg-najd-clayBg border-2 border-najd-mud focus:border-najd-gold text-najd-sand rounded-xl py-2.5 px-4 text-sm outline-none transition">
                     </div>
@@ -339,7 +341,7 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="btn-najdi w-full py-3.5 rounded-xl text-base font-bold shadow-lg flex items-center justify-center gap-2 mt-2">
+                    <button type="submit" id="joinSubmitBtn" class="btn-najdi w-full py-3.5 rounded-xl text-base font-bold shadow-lg flex items-center justify-center gap-2 mt-2">
                         <i class="fa-solid fa-right-to-bracket"></i> دخول اللعبة
                     </button>
                 </form>
@@ -630,7 +632,7 @@
                 cat: "معارك الدفاع"
             },
             {
-                q: "ما هو اسم المعركة الفاصلة والشهيرة التي حدثت قرب الدرعية في بدايات توحيد المنطقة؟",
+                q: "ما هي المعركة الفاصلة والشهيرة التي حدثت قرب الدرعية في بدايات توحيد المنطقة؟",
                 options: ["معركة الحائر", "معركة معتلا", "معركة الرقية والعدوة", "معركة بسل"],
                 correct: 2,
                 cat: "معارك تاريخية"
@@ -699,10 +701,15 @@
 
 
         /* =========================================================================
-           2. GLOBAL STATE & COMMUNICATION (BroadcastChannel / LocalStorage)
+           2. GLOBAL STATE & DUAL-LAYER COMMUNICATION (PeerJS WebRTC + BroadcastChannel)
            ========================================================================= */
-        const CHANNEL_NAME = "diriyah_quiz_channel";
+        const LOCAL_CHANNEL_NAME = "diriyah_quiz_channel";
         let broadcastChannel = null;
+
+        // PeerJS P2P Networking State
+        let peer = null;
+        let peerConnectionsMap = {}; // playerConnId -> peerConnection object (for Host)
+        let hostPeerConn = null; // (for Player)
 
         // State Variables
         let currentRole = 'select'; // 'host', 'player', 'select'
@@ -729,21 +736,24 @@
         let isSoundMuted = false;
 
         /* =========================================================================
-           3. INITIALIZATION & ROUTING ON LOAD
+           3. INITIALIZATION & ROUTING ON LOAD (Strict Separation)
            ========================================================================= */
         window.addEventListener('DOMContentLoaded', () => {
             initBroadcastChannel();
 
-            // Check URL Params for direct join or pin
+            // Check URL Params for direct mobile/player join
             const urlParams = new URLSearchParams(window.location.search);
-            const roleParam = urlParams.get('role');
+            const roleParam = urlParams.get('mode') || urlParams.get('role');
             const pinParam = urlParams.get('pin');
 
             if (pinParam) {
                 document.getElementById('inputPin').value = pinParam;
             }
 
-            if (roleParam === 'player') {
+            // Direct Separation: If opened from QR Code / Mobile URL with mode=player or pinParam -> Force Player Mode directly!
+            if (roleParam === 'player' || pinParam) {
+                // Hide header switch button on direct mobile join to prevent accidental switching
+                document.getElementById('switchRoleBtn').classList.add('hidden');
                 initPlayerMode();
             } else if (roleParam === 'host') {
                 initHostMode();
@@ -754,11 +764,11 @@
 
         function initBroadcastChannel() {
             if ('BroadcastChannel' in window) {
-                broadcastChannel = new BroadcastChannel(CHANNEL_NAME);
+                broadcastChannel = new BroadcastChannel(LOCAL_CHANNEL_NAME);
                 broadcastChannel.onmessage = (event) => handleIncomingMessage(event.data);
             }
 
-            // Fallback storage listener for cross-tab sync if BroadcastChannel fails
+            // Fallback storage listener for same-device cross-tab testing
             window.addEventListener('storage', (e) => {
                 if (e.key === 'diriyah_sync_msg' && e.newValue) {
                     try {
@@ -770,10 +780,19 @@
         }
 
         function sendMessage(data) {
+            // 1. Send via PeerJS Cloud P2P
+            if (currentRole === 'host') {
+                Object.values(peerConnectionsMap).forEach(conn => {
+                    if (conn && conn.open) conn.send(data);
+                });
+            } else if (currentRole === 'player' && hostPeerConn && hostPeerConn.open) {
+                hostPeerConn.send(data);
+            }
+
+            // 2. Broadcast via Local BroadcastChannel (fallback for same device)
             if (broadcastChannel) {
                 broadcastChannel.postMessage(data);
             }
-            // Fallback store write
             localStorage.setItem('diriyah_sync_msg', JSON.stringify({ ...data, _ts: Date.now() }));
         }
 
@@ -870,11 +889,13 @@
             closeRoleModal();
             currentRole = 'select';
             document.getElementById('roleBadge').classList.add('hidden');
+            // Reset URL params without reload
+            window.history.pushState({}, document.title, window.location.pathname);
             showSection('roleSelectSection');
         }
 
         /* =========================================================================
-           6. HOST MODE LOGIC & LOBBY
+           6. HOST MODE LOGIC & LOBBY (PeerJS Host Server Setup)
            ========================================================================= */
         function initHostMode() {
             initAudio();
@@ -886,8 +907,41 @@
             gamePin = Math.floor(100000 + Math.random() * 900000).toString();
             document.getElementById('hostPinDisplay').innerText = gamePin;
 
-            // Generate QR Code dynamically targeting current page URL with PIN parameter
-            const joinUrl = `${window.location.origin}${window.location.pathname}?role=player&pin=${gamePin}`;
+            // Initialize PeerJS Host with Room ID = diriyah_quiz_PIN
+            const hostRoomId = `diriyah_quiz_${gamePin}`;
+            if (peer) peer.destroy();
+
+            try {
+                peer = new Peer(hostRoomId);
+
+                peer.on('open', (id) => {
+                    document.getElementById('networkStatusText').innerHTML = `
+                        <i class="fa-solid fa-signal text-green-400"></i> متصل بالسحاب - الرمز جاهز للانضمام
+                    `;
+                });
+
+                peer.on('connection', (conn) => {
+                    peerConnectionsMap[conn.peer] = conn;
+
+                    conn.on('data', (data) => {
+                        handleIncomingMessage(data);
+                    });
+
+                    conn.on('close', () => {
+                        delete peerConnectionsMap[conn.peer];
+                    });
+                });
+
+                peer.on('error', (err) => {
+                    console.warn("PeerJS Host fallback:", err);
+                    document.getElementById('networkStatusText').innerText = "وضع الشبكة المحلية (Broadcast Channel)";
+                });
+            } catch (e) {
+                console.warn("PeerJS not loaded, relying on local sync.");
+            }
+
+            // Generate QR Code dynamically targeting mobile player page directly with parameters
+            const joinUrl = `${window.location.origin}${window.location.pathname}?mode=player&pin=${gamePin}`;
             const qrContainer = document.getElementById('qrcodeCanvas');
             qrContainer.innerHTML = '';
             new QRCode(qrContainer, {
@@ -913,7 +967,7 @@
                 listEl.innerHTML = `
                     <div class="col-span-full flex flex-col items-center justify-center py-8 text-najd-sand/40 text-center">
                         <i class="fa-solid fa-spinner fa-spin text-3xl text-najd-gold mb-2"></i>
-                        <p class="text-sm">في انتظار انضمام الأبطال عبر الجوال (الرمز: ${gamePin})...</p>
+                        <p class="text-sm">في انتظار انضمام المشاركين عبر الجوال (الرمز: ${gamePin})...</p>
                     </div>`;
                 return;
             }
@@ -1008,7 +1062,7 @@
 
 
         /* =========================================================================
-           7. PLAYER MODE LOGIC (Mobile Experience)
+           7. PLAYER MODE LOGIC (Dedicated Mobile Experience)
            ========================================================================= */
         function initPlayerMode() {
             initAudio();
@@ -1044,10 +1098,60 @@
             myPlayerInfo.team = teamVal;
             myPlayerInfo.score = 0;
 
-            // Notify Host
+            const submitBtn = document.getElementById('joinSubmitBtn');
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري الاتصال بالمضيف...`;
+            submitBtn.disabled = true;
+
+            // Connect to Host via PeerJS
+            const targetHostRoomId = `diriyah_quiz_${pinVal}`;
+            if (peer) peer.destroy();
+
+            try {
+                peer = new Peer();
+                peer.on('open', () => {
+                    hostPeerConn = peer.connect(targetHostRoomId);
+
+                    hostPeerConn.on('open', () => {
+                        // Send Join payload over P2P
+                        sendMessage({
+                            type: 'PLAYER_JOIN',
+                            pin: pinVal,
+                            player: myPlayerInfo
+                        });
+                        completePlayerLogin(nameVal, teamVal);
+                    });
+
+                    hostPeerConn.on('data', (data) => {
+                        handleIncomingMessage(data);
+                    });
+
+                    hostPeerConn.on('error', (err) => {
+                        console.warn("Peer connection error, falling back:", err);
+                        completePlayerLogin(nameVal, teamVal);
+                    });
+                });
+
+                peer.on('error', (err) => {
+                    console.warn("Peer client fallback to broadcast:", err);
+                    completePlayerLogin(nameVal, teamVal);
+                });
+            } catch (err) {
+                completePlayerLogin(nameVal, teamVal);
+            }
+
+            // Fallback safety timeout if PeerJS server delays
+            setTimeout(() => {
+                if (document.getElementById('playerJoinSection').classList.contains('hidden') === false) {
+                    completePlayerLogin(nameVal, teamVal);
+                }
+            }, 1200);
+        }
+
+        function completePlayerLogin(nameVal, teamVal) {
+            // Local fallback send
             sendMessage({
                 type: 'PLAYER_JOIN',
-                pin: pinVal,
+                pin: document.getElementById('inputPin').value.trim(),
                 player: myPlayerInfo
             });
 
@@ -1057,11 +1161,11 @@
             document.getElementById('playerBadgeScore').innerText = '0';
 
             showSection('playerAnswerSection');
-            document.getElementById('playerQuestionPreview').innerText = "تم الانضمام بنجاح! بانتظار السؤال الأول من المضيف...";
+            document.getElementById('playerQuestionPreview').innerText = "تم الانضمام بنجاح! بانتظار بدء السؤال الأول من شاشة المضيف...";
             document.getElementById('playerOptionsContainer').innerHTML = `
                 <div class="text-center py-8 text-najd-gold">
                     <i class="fa-solid fa-hourglass-half text-3xl animate-spin mb-3"></i>
-                    <p class="text-xs">استعد لإجابة الأسئلة التاريخية...</p>
+                    <p class="text-xs">استعد لإجابة الأسئلة التاريخية من شاشة جوالك...</p>
                 </div>
             `;
             playBeep(500, 0.15);
@@ -1095,7 +1199,7 @@
 
             const fb = document.getElementById('playerFeedbackBox');
             fb.className = 'p-3 rounded-xl text-center font-bold text-xs bg-najd-mud/60 text-najd-gold border border-najd-gold/40';
-            fb.innerText = 'تم تسجيل إجابتك! بانتظار انتهاء الوقت...';
+            fb.innerText = 'تم تسجيل إجابتك بنجاح! بانتظار إعلان النتيجة على الشاشة الكبيرة...';
             fb.classList.remove('hidden');
             playBeep(600, 0.1);
         }
