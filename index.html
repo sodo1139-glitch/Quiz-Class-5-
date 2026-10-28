@@ -1,0 +1,1515 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحدي إمارة الدرعية التاريخي | جوهرة المملكة</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Cairo & Amiri for Najdi aesthetic -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- QRCode JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- PeerJS for Real-time Cloud P2P Networking -->
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        najd: {
+                            mud: '#8C5A32',
+                            mudDark: '#5C381E',
+                            mudLight: '#B88252',
+                            sand: '#E6D3B1',
+                            sandLight: '#F7F1E5',
+                            gold: '#D4AF37',
+                            goldDark: '#997A15',
+                            accentRed: '#8B261D',
+                            palmGreen: '#2D5A27',
+                            clayBg: '#1C1613'
+                        }
+                    },
+                    fontFamily: {
+                        cairo: ['Cairo', 'sans-serif'],
+                        amiri: ['Amiri', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #120D0A;
+            color: #F7F1E5;
+            background-image: radial-gradient(#322218 1px, transparent 1px);
+            background-size: 24px 24px;
+            overflow-x: hidden;
+        }
+
+        .font-amiri {
+            font-family: 'Amiri', serif;
+        }
+
+        /* Najdi Triangular Decorative Border Pattern */
+        .najdi-border-top {
+            background: repeat-x bottom left;
+            background-size: 20px 10px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 10'%3E%3Cpolygon points='0,10 10,0 20,10' fill='%23D4AF37'/%3E%3C/svg%3E");
+        }
+
+        .najdi-border-bottom {
+            background: repeat-x top left;
+            background-size: 20px 10px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 10'%3E%3Cpolygon points='0,0 10,10 20,0' fill='%23D4AF37'/%3E%3C/svg%3E");
+        }
+
+        .najdi-card {
+            background: linear-gradient(145deg, #2A1D16, #1A120D);
+            border: 2px solid #8C5A32;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(212, 175, 55, 0.08);
+            position: relative;
+        }
+
+        /* Clay Texture / Mud Effect */
+        .clay-card {
+            background-color: #261B14;
+            border: 2px solid #D4AF37;
+            position: relative;
+        }
+
+        /* Custom Button Styling */
+        .btn-najdi {
+            background: linear-gradient(180deg, #D4AF37 0%, #997A15 100%);
+            color: #1A120D;
+            font-weight: 800;
+            box-shadow: 0 4px 0 #5E4A0C;
+            transition: all 0.15s ease;
+        }
+        .btn-najdi:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #5E4A0C;
+            filter: brightness(1.1);
+        }
+        .btn-najdi:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #5E4A0C;
+        }
+
+        .btn-option {
+            background: linear-gradient(145deg, #38261C, #241710);
+            border: 2px solid #8C5A32;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-option:hover {
+            border-color: #D4AF37;
+            background: linear-gradient(145deg, #4A3326, #322017);
+            transform: scale(1.01);
+        }
+
+        /* FLIP Leaderboard Transition Items */
+        .leaderboard-item {
+            will-change: transform;
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.3s ease;
+        }
+
+        /* Pulsing Glow */
+        @keyframes goldGlow {
+            0%, 100% { box-shadow: 0 0 15px rgba(212, 175, 55, 0.3); }
+            50% { box-shadow: 0 0 30px rgba(212, 175, 55, 0.7); }
+        }
+        .gold-glow {
+            animation: goldGlow 3s infinite ease-in-out;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1A120D;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #8C5A32;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #D4AF37;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-najd-gold selection:text-najd-mudDark">
+
+    <!-- Header Navigation -->
+    <header class="bg-najd-mudDark/90 backdrop-blur border-b-2 border-najd-gold px-4 py-3 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-najd-gold text-najd-mudDark flex items-center justify-center font-black text-xl shadow-lg border border-yellow-200">
+                    <i class="fa-solid me-0.5 fa-fort-awesome"></i>
+                </div>
+                <div>
+                    <h1 class="font-amiri font-bold text-xl md:text-2xl text-najd-sand leading-tight">تحدي إمارة الدرعية التاريخي</h1>
+                    <p class="text-xs text-najd-gold/80 hidden sm:block">منهج التاريخ - الصف الثاني ثانوي (عاصمة الدولة السعودية الأولى)</p>
+                </div>
+            </div>
+
+            <!-- Global Action Controls -->
+            <div class="flex items-center gap-2 sm:gap-4">
+                <button id="soundToggleBtn" onclick="toggleAudio()" class="p-2 w-10 h-10 rounded-lg bg-najd-mud text-najd-sand hover:bg-najd-gold hover:text-najd-mudDark transition flex items-center justify-center" title="كتم/تشغيل الصوت">
+                    <i id="soundIcon" class="fa-solid fa-volume-high"></i>
+                </button>
+
+                <div id="roleBadge" class="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-najd-clayBg border border-najd-gold/40 text-xs font-semibold text-najd-sand">
+                    <span id="connectionDot" class="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></span>
+                    <span id="roleText">جاري الاتصال...</span>
+                </div>
+
+                <button id="switchRoleBtn" onclick="switchRoleModal()" class="text-xs bg-najd-mud/60 hover:bg-najd-mud px-3 py-1.5 rounded-md text-najd-sand border border-najd-mudLight transition">
+                    <i class="fa-solid fa-repeat me-1"></i> تبديل النمط
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Dynamic View Container -->
+    <main class="max-w-7xl mx-auto w-full p-3 sm:p-6 flex-grow flex flex-col justify-center">
+
+        <!-- ================= PAGE 1: ROLE SELECTION (Landing) ================= -->
+        <section id="roleSelectSection" class="w-full max-w-3xl mx-auto my-auto space-y-8 text-center">
+            <div class="najdi-card rounded-2xl p-6 sm:p-10 border-4 border-najd-gold text-center relative overflow-hidden">
+                <div class="najdi-border-top h-3 absolute top-0 left-0 right-0"></div>
+                
+                <div class="my-4">
+                    <span class="inline-block px-4 py-1.5 rounded-full bg-najd-gold/20 text-najd-gold text-sm font-bold border border-najd-gold/40 mb-3">
+                        مسابقة تفاعلية شاملة (25 سؤالاً)
+                    </span>
+                    <h2 class="font-amiri text-3xl sm:text-5xl font-bold text-najd-sand mb-4">اختر نمط التشغيل</h2>
+                    <p class="text-najd-sand/80 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
+                        قم باستضافة اللعبة على الشاشة الكبيرة للفصل أو القاعة، أو انضم كلاعب/فريق مباشرةً من جوالك.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                    <!-- Host Mode Box -->
+                    <button onclick="initHostMode()" class="najdi-card group hover:border-najd-gold p-6 rounded-xl text-right transition-all transform hover:-translate-y-1 hover:shadow-2xl flex flex-col justify-between">
+                        <div>
+                            <div class="w-14 h-14 rounded-xl bg-najd-gold/10 border border-najd-gold text-najd-gold flex items-center justify-center text-2xl mb-4 group-hover:bg-najd-gold group-hover:text-najd-mudDark transition">
+                                <i class="fa-solid fa-desktop"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-najd-gold mb-2">شاشة العرض الرئيسية (Host)</h3>
+                            <p class="text-xs text-najd-sand/70 leading-normal">
+                                الشاشة الكبيرة للمعلم/المدرب: تعرض رمز PIN و QR Code والأسئلة ومؤقت الإجابة وترتيب الفرق.
+                            </p>
+                        </div>
+                        <div class="mt-6 flex items-center text-sm font-bold text-najd-gold group-hover:translate-x-[-4px] transition-transform">
+                            <span>بدء العرض كـ Host</span>
+                            <i class="fa-solid fa-arrow-left ms-2"></i>
+                        </div>
+                    </button>
+
+                    <!-- Player Join Box -->
+                    <button onclick="initPlayerMode()" class="najdi-card group hover:border-najd-gold p-6 rounded-xl text-right transition-all transform hover:-translate-y-1 hover:shadow-2xl flex flex-col justify-between">
+                        <div>
+                            <div class="w-14 h-14 rounded-xl bg-najd-palmGreen/30 border border-green-500 text-green-400 flex items-center justify-center text-2xl mb-4 group-hover:bg-green-600 group-hover:text-white transition">
+                                <i class="fa-solid fa-mobile-screen-button"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-green-400 mb-2">انضمام مشارك من الجوال (Player)</h3>
+                            <p class="text-xs text-najd-sand/70 leading-normal">
+                                شاشة خاصة بالجوال: أدخل رمز اللعبة (PIN)، سجل اسمك وفريقك، وأجب مباشرة من الجوال.
+                            </p>
+                        </div>
+                        <div class="mt-6 flex items-center text-sm font-bold text-green-400 group-hover:translate-x-[-4px] transition-transform">
+                            <span>الانضمام كلاعب</span>
+                            <i class="fa-solid fa-arrow-left ms-2"></i>
+                        </div>
+                    </button>
+                </div>
+
+                <div class="najdi-border-bottom h-3 absolute bottom-0 left-0 right-0"></div>
+            </div>
+        </section>
+
+
+        <!-- ================= PAGE 2: HOST LOBBY SECTION ================= -->
+        <section id="hostLobbySection" class="hidden w-full max-w-5xl mx-auto space-y-6">
+            <div class="najdi-card rounded-2xl p-6 sm:p-8 gold-glow border-2 border-najd-gold text-center">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+                    
+                    <!-- Left/Top: Huge Game PIN Display -->
+                    <div class="flex-1 text-center md:text-right space-y-2">
+                        <span class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-najd-mud/60 text-najd-gold text-xs font-bold border border-najd-gold/30">
+                            <i class="fa-solid fa-key"></i> رمز دخول اللعبة المباشر (PIN)
+                        </span>
+                        <h3 class="text-sm text-najd-sand/80">ادخل الرمز في جوالك أو امسح الـ QR للوصول المباشر:</h3>
+                        <div id="hostPinDisplay" class="text-6xl sm:text-8xl font-black tracking-widest text-najd-gold font-mono drop-shadow-md my-2">
+                            ------
+                        </div>
+                        <p id="networkStatusText" class="text-xs text-green-400 font-semibold flex items-center justify-center md:justify-start gap-2">
+                            <i class="fa-solid fa-signal animate-pulse"></i> خادم الشبكة السحابية جاهز للاتصال
+                        </p>
+                    </div>
+
+                    <!-- Center: Dynamic QR Code Box -->
+                    <div class="bg-white p-4 rounded-xl border-4 border-najd-gold shadow-2xl flex flex-col items-center">
+                        <div id="qrcodeCanvas" class="p-1"></div>
+                        <span class="text-[11px] text-gray-900 font-extrabold mt-2">امسح بالجوال للانضمام المباشر</span>
+                    </div>
+
+                    <!-- Right/Bottom: Controls -->
+                    <div class="flex flex-col items-center md:items-end justify-center gap-3 w-full md:w-auto">
+                        <div class="bg-najd-clayBg/80 px-6 py-4 rounded-xl border border-najd-gold/30 text-center w-full">
+                            <div class="text-xs text-najd-sand/70">المشاركون المنضمون</div>
+                            <div id="connectedCount" class="text-4xl font-extrabold text-najd-gold">0</div>
+                        </div>
+                        <button onclick="startHostQuiz()" id="startQuizBtn" class="btn-najdi w-full py-4 px-8 rounded-xl text-lg flex items-center justify-center gap-2 shadow-xl">
+                            <i class="fa-solid fa-play"></i> بدء المسابقة الآن
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Connected Players Grid -->
+            <div class="najdi-card rounded-xl p-5 border border-najd-mud">
+                <div class="flex justify-between items-center mb-4 pb-2 border-b border-najd-mud">
+                    <h3 class="font-bold text-lg text-najd-sand flex items-center gap-2">
+                        <i class="fa-solid fa-users text-najd-gold"></i> الفرق والفرسان المنضمون في القاعة
+                    </h3>
+                    <span class="text-xs text-najd-sand/60">يتم التحديث لحظياً من أجهزة الجوال</span>
+                </div>
+                <div id="lobbyPlayersList" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 min-h-[120px] max-h-[260px] overflow-y-auto p-1">
+                    <div class="col-span-full flex flex-col items-center justify-center py-8 text-najd-sand/40 text-center">
+                        <i class="fa-solid fa-spinner fa-spin text-3xl text-najd-gold mb-2"></i>
+                        <p class="text-sm">في انتظار انضمام المشاركين عبر الجوال...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ================= PAGE 3: PLAYER JOIN SCREEN (Mobile Optimized) ================= -->
+        <section id="playerJoinSection" class="hidden w-full max-w-md mx-auto my-auto">
+            <div class="najdi-card rounded-2xl p-6 border-2 border-najd-gold space-y-5 shadow-2xl relative">
+                <div class="najdi-border-top h-2 absolute top-0 left-0 right-0"></div>
+
+                <div class="text-center pt-2">
+                    <div class="w-16 h-16 mx-auto rounded-full bg-najd-gold/20 border-2 border-najd-gold text-najd-gold flex items-center justify-center text-3xl mb-2">
+                        <i class="fa-solid fa-mobile-screen"></i>
+                    </div>
+                    <h2 class="font-amiri text-2xl font-bold text-najd-sand">انضمام فرسان الدرعية</h2>
+                    <p class="text-xs text-najd-sand/70">أدخل معلوماتك للالتحاق بشاشة المسابقة التاريخية</p>
+                </div>
+
+                <form id="joinForm" onsubmit="handlePlayerJoin(event)" class="space-y-4">
+                    <!-- PIN Input -->
+                    <div>
+                        <label class="block text-xs font-bold text-najd-gold mb-1">رمز اللعبة (PIN مكون من 6 أرقام):</label>
+                        <input type="number" id="inputPin" required placeholder="أدخل الرمز PIN" 
+                               class="w-full bg-najd-clayBg border-2 border-najd-mud focus:border-najd-gold text-center text-2xl font-mono tracking-widest text-najd-sand rounded-xl py-2.5 px-4 outline-none transition"
+                               oninput="if(this.value.length > 6) this.value = this.value.slice(0,6)">
+                    </div>
+
+                    <!-- Player Name Input -->
+                    <div>
+                        <label class="block text-xs font-bold text-najd-gold mb-1">اسم اللاعب/المشارك:</label>
+                        <input type="text" id="inputPlayerName" required placeholder="أدخل اسمك الكريم" 
+                               class="w-full bg-najd-clayBg border-2 border-najd-mud focus:border-najd-gold text-najd-sand rounded-xl py-2.5 px-4 text-sm outline-none transition">
+                    </div>
+
+                    <!-- Team Select or Create -->
+                    <div>
+                        <label class="block text-xs font-bold text-najd-gold mb-1">الفريق (اختر أو أنشئ جديداً):</label>
+                        <div class="space-y-2">
+                            <select id="selectTeam" onchange="toggleCustomTeamInput(this.value)" class="w-full bg-najd-clayBg border-2 border-najd-mud focus:border-najd-gold text-najd-sand rounded-xl py-2.5 px-3 text-sm outline-none transition">
+                                <option value="فرسان الطريف">فريق فرسان الطريف</option>
+                                <option value="أبطال البجيري">فريق أبطال البجيري</option>
+                                <option value="حماة غصيبة">فريق حماة غصيبة</option>
+                                <option value="صقور النخيل">فريق صقور النخيل</option>
+                                <option value="__NEW__">+ إنشاء فريق جديد...</option>
+                            </select>
+
+                            <div id="customTeamWrapper" class="hidden flex gap-2">
+                                <input type="text" id="inputCustomTeam" placeholder="اكتب اسم الفريق الجديد..." 
+                                       class="w-full bg-najd-clayBg border-2 border-najd-gold text-najd-sand rounded-xl py-2 px-3 text-sm outline-none">
+                                <button type="button" onclick="confirmNewTeamCreation()" class="bg-najd-gold text-najd-mudDark font-bold px-3 py-1.5 rounded-xl text-xs flex-shrink-0 hover:bg-yellow-400 transition">
+                                    إضافة
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="joinSubmitBtn" class="btn-najdi w-full py-3.5 rounded-xl text-base font-bold shadow-lg flex items-center justify-center gap-2 mt-2">
+                        <i class="fa-solid fa-right-to-bracket"></i> دخول اللعبة
+                    </button>
+                </form>
+
+                <div class="najdi-border-bottom h-2 absolute bottom-0 left-0 right-0"></div>
+            </div>
+        </section>
+
+
+        <!-- ================= PAGE 4: HOST QUESTION SCREEN ================= -->
+        <section id="hostQuestionSection" class="hidden w-full max-w-5xl mx-auto space-y-6">
+            <!-- Header Bar with Timer & Question Progress -->
+            <div class="flex flex-wrap justify-between items-center bg-najd-mudDark/80 p-4 rounded-xl border border-najd-gold/40 gap-3">
+                <div class="flex items-center gap-3">
+                    <span id="questionNumBadge" class="bg-najd-gold text-najd-mudDark font-black px-3 py-1 rounded-lg text-sm">
+                        السؤال 1 من 25
+                    </span>
+                    <span id="questionCategoryBadge" class="text-xs text-najd-sand/80 bg-najd-clayBg px-3 py-1 rounded-md border border-najd-mud">
+                        تأسيس الدرعية
+                    </span>
+                </div>
+
+                <!-- Timer Counter -->
+                <div class="flex items-center gap-2">
+                    <i class="fa-regular fa-clock text-najd-gold text-lg"></i>
+                    <span id="timerText" class="text-2xl font-mono font-bold text-najd-gold">30</span>
+                    <span class="text-xs text-najd-sand/60">ثانية</span>
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div class="najdi-card rounded-2xl p-6 sm:p-10 border-2 border-najd-gold text-center relative shadow-2xl">
+                <div class="najdi-border-top h-2.5 absolute top-0 left-0 right-0"></div>
+
+                <h2 id="hostQuestionText" class="font-amiri text-2xl sm:text-4xl font-bold text-najd-sand leading-relaxed min-h-[90px] flex items-center justify-center">
+                    جاري تحميل السؤال...
+                </h2>
+
+                <!-- 4 Options Grid -->
+                <div id="hostOptionsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+                    <!-- Dynamic Options Inserted Here -->
+                </div>
+
+                <div class="najdi-border-bottom h-2.5 absolute bottom-0 left-0 right-0"></div>
+            </div>
+
+            <!-- Host Actions Footer -->
+            <div class="flex justify-between items-center px-2">
+                <div class="text-xs text-najd-sand/70">
+                    <i class="fa-solid fa-users me-1"></i> إجابات اللاعبين: <span id="answersSubmittedCount" class="font-bold text-najd-gold">0</span>
+                </div>
+                <button onclick="skipQuestionTimer()" class="text-xs bg-najd-mud/60 hover:bg-najd-mud border border-najd-mudLight text-najd-sand px-4 py-2 rounded-lg transition">
+                    تخطي المؤقت وتأكيد النتائج <i class="fa-solid fa-forward ms-1"></i>
+                </button>
+            </div>
+        </section>
+
+
+        <!-- ================= PAGE 5: PLAYER ANSWER SCREEN (Mobile View) ================= -->
+        <section id="playerAnswerSection" class="hidden w-full max-w-md mx-auto space-y-4 my-auto">
+            <!-- Player Status Top Bar -->
+            <div class="bg-najd-clayBg border border-najd-gold/40 p-3 rounded-xl flex justify-between items-center text-xs">
+                <div>
+                    <span class="text-najd-sand/60">اللاعب:</span>
+                    <span id="playerBadgeName" class="font-bold text-najd-gold ms-1">عمر</span>
+                </div>
+                <div>
+                    <span class="text-najd-sand/60">الفريق:</span>
+                    <span id="playerBadgeTeam" class="font-bold text-najd-sand ms-1">فرسان الطريف</span>
+                </div>
+                <div>
+                    <span class="text-najd-sand/60">النقاط:</span>
+                    <span id="playerBadgeScore" class="font-bold text-green-400 ms-1">0</span>
+                </div>
+            </div>
+
+            <!-- Active Question Notification for Player -->
+            <div class="najdi-card p-4 rounded-xl text-center border border-najd-gold">
+                <span class="text-xs text-najd-gold font-bold block mb-1">اختر الإجابة الصحيحة بسرعة لزيادة النقاط</span>
+                <div id="playerQuestionPreview" class="text-sm font-semibold text-najd-sand line-clamp-2">
+                    السؤال يعرض الآن على الشاشة...
+                </div>
+            </div>
+
+            <!-- Player Option Buttons -->
+            <div id="playerOptionsContainer" class="grid grid-cols-1 gap-3">
+                <!-- Option buttons dynamically generated -->
+            </div>
+
+            <!-- Player Feedback Overlay/Message -->
+            <div id="playerFeedbackBox" class="hidden p-4 rounded-xl text-center font-bold text-sm">
+                <!-- Dynamic feedback -->
+            </div>
+        </section>
+
+
+        <!-- ================= PAGE 6: FLIP LEADERBOARD SECTION ================= -->
+        <section id="leaderboardSection" class="hidden w-full max-w-4xl mx-auto space-y-6">
+            <div class="text-center space-y-2">
+                <span class="px-4 py-1 rounded-full bg-najd-gold/20 text-najd-gold text-xs font-bold border border-najd-gold/40">
+                    نتائج وسلّم مراكز الفرق والفرسان
+                </span>
+                <h2 class="font-amiri text-3xl sm:text-4xl font-bold text-najd-sand">لوحة المتصدرين وتغير المراكز</h2>
+                <p class="text-xs text-najd-sand/70">تحريك انسيابي مجسم (FLIP Animation) يعكس صعود وهبوط المراكز</p>
+            </div>
+
+            <!-- Leaderboard Items Container -->
+            <div id="leaderboardList" class="space-y-3 relative min-h-[300px]">
+                <!-- FLIP leaderboard items will render here -->
+            </div>
+
+            <!-- Host Next Control -->
+            <div class="flex justify-center pt-4">
+                <button id="nextQuestionBtn" onclick="nextQuestionOrFinish()" class="btn-najdi py-3.5 px-10 rounded-xl text-lg flex items-center gap-2 shadow-2xl">
+                    <span>السؤال التالي</span>
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+            </div>
+        </section>
+
+
+        <!-- ================= PAGE 7: FINAL PODIUM & VICTORY ================= -->
+        <section id="finalVictorySection" class="hidden w-full max-w-4xl mx-auto space-y-8 text-center my-auto">
+            <div class="najdi-card rounded-2xl p-8 border-4 border-najd-gold gold-glow relative">
+                <div class="najdi-border-top h-3 absolute top-0 left-0 right-0"></div>
+
+                <div class="text-amber-400 text-5xl mb-3">
+                    <i class="fa-solid fa-trophy"></i>
+                </div>
+                <h2 class="font-amiri text-4xl sm:text-5xl font-extrabold text-najd-gold mb-2">ختام تحدي الدرعية المجيد</h2>
+                <p class="text-sm text-najd-sand/80 max-w-lg mx-auto mb-8">
+                    مبروك لأبطال التاريخ والفرسان الفائزين في مسابقة منهج التاريخ للصف الثاني ثانوي!
+                </p>
+
+                <!-- Podium Top 3 -->
+                <div id="finalPodiumContainer" class="grid grid-cols-3 gap-3 sm:gap-6 items-end mb-8 max-w-2xl mx-auto">
+                    <!-- Podium 2nd Place -->
+                    <div id="podium2" class="order-1 bg-najd-clayBg border-2 border-gray-400 p-4 rounded-t-xl flex flex-col items-center h-40 justify-end">
+                        <i class="fa-solid fa-medal text-gray-300 text-2xl mb-1"></i>
+                        <span id="podium2Name" class="font-bold text-xs sm:text-sm text-najd-sand truncate w-full">المركز الثاني</span>
+                        <span id="podium2Score" class="text-xs text-najd-gold font-mono font-bold mt-1">0 ن</span>
+                        <div class="w-full bg-gray-500/30 h-12 rounded mt-2 flex items-center justify-center font-bold text-gray-300">2</div>
+                    </div>
+
+                    <!-- Podium 1st Place -->
+                    <div id="podium1" class="order-2 bg-najd-mud/90 border-4 border-najd-gold p-4 rounded-t-2xl flex flex-col items-center h-52 justify-end shadow-2xl">
+                        <i class="fa-solid fa-crown text-najd-gold text-4xl mb-1 animate-bounce"></i>
+                        <span id="podium1Name" class="font-black text-sm sm:text-base text-najd-gold truncate w-full">بطل المسابقة</span>
+                        <span id="podium1Score" class="text-sm text-green-400 font-mono font-bold mt-1">0 ن</span>
+                        <div class="w-full bg-najd-gold text-najd-mudDark h-20 rounded-t-lg mt-2 flex items-center justify-center text-2xl font-black">1</div>
+                    </div>
+
+                    <!-- Podium 3rd Place -->
+                    <div id="podium3" class="order-3 bg-najd-clayBg border-2 border-amber-700 p-4 rounded-t-xl flex flex-col items-center h-32 justify-end">
+                        <i class="fa-solid fa-award text-amber-600 text-xl mb-1"></i>
+                        <span id="podium3Name" class="font-bold text-xs sm:text-sm text-najd-sand truncate w-full">المركز الثالث</span>
+                        <span id="podium3Score" class="text-xs text-najd-gold font-mono font-bold mt-1">0 ن</span>
+                        <div class="w-full bg-amber-800/30 h-8 rounded mt-2 flex items-center justify-center font-bold text-amber-600">3</div>
+                    </div>
+                </div>
+
+                <button onclick="restartGame()" class="btn-najdi py-3.5 px-8 rounded-xl text-base">
+                    <i class="fa-solid fa-rotate-right me-2"></i> إعادات تشغيل المسابقة
+                </button>
+
+                <div class="najdi-border-bottom h-3 absolute bottom-0 left-0 right-0"></div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-najd-clayBg/90 border-t border-najd-mud/50 py-3 text-center text-xs text-najd-sand/50">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-2">
+            <div>
+                إمارة الدرعية عاصمة الدولة السعودية الأولى | مسابقة تاريخية تفاعلية للثانوي
+            </div>
+            <div class="flex items-center gap-2 text-najd-gold/70">
+                <i class="fa-solid fa-tree text-najd-palmGreen"></i> الهوية والزخرفة النجدية الأصيلة
+            </div>
+        </div>
+    </footer>
+
+
+    <!-- Switch Role Confirmation Modal -->
+    <div id="roleModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="najdi-card rounded-xl p-6 border-2 border-najd-gold max-w-sm w-full text-center space-y-4">
+            <h3 class="text-lg font-bold text-najd-sand">تبديل نمط اللعب؟</h3>
+            <p class="text-xs text-najd-sand/70 leading-relaxed">
+                الانتقال سيؤدي لإعادة توجيه الشاشة الحالية. هل تود العودة لشاشة الخيارات الرئيسية؟
+            </p>
+            <div class="flex gap-2">
+                <button onclick="confirmSwitchRole()" class="btn-najdi flex-1 py-2 rounded-lg text-sm">نعم، أبدل</button>
+                <button onclick="closeRoleModal()" class="bg-najd-mud/60 text-najd-sand flex-1 py-2 rounded-lg text-sm">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        /* =========================================================================
+           1. QUESTION BANK: 25 Detailed Grade 11 Secondary History Questions
+           ========================================================================= */
+        const QUIZ_QUESTIONS = [
+            {
+                q: "في أي عام تم تأسيس إمارة الدرعية على يد مانع المريدي؟",
+                options: ["850 هـ (1446 م)", "1139 هـ (1727 م)", "1200 هـ (1785 م)", "700 هـ (1300 م)"],
+                correct: 0,
+                cat: "تأسيس الدرعية"
+            },
+            {
+                q: "من هو الجد الأكبر للأسرة السعودية المالكة الذي أنشأ الدرعية وقدم من شرقي الجزيرة العربية؟",
+                options: ["الإمام محمد بن سعود", "مانع المريدي", "سعود بن محمد", "ربيعة المريدي"],
+                correct: 1,
+                cat: "تأسيس الدرعية"
+            },
+            {
+                q: "ما هو الحي التاريخي المسجل في قائمة التراث العالمي (اليونسكو) وكان مقراً لحكم أئمة الدولة السعودية الأولى؟",
+                options: ["حي البجيري", "حي الطريف", "حي غصيبة", "حي المريسي"],
+                correct: 1,
+                cat: "العمارة والآثار"
+            },
+            {
+                q: "من هو المؤسس الحقيقي للدولة السعودية الأولى وتولى الحكم عام 1139هـ (1727م)؟",
+                options: ["الإمام تركي بن عبدالله", "الإمام محمد بن سعود", "الإمام عبدالعزيز بن محمد", "الشيخ محمد بن عبدالوهاب"],
+                correct: 1,
+                cat: "تأسيس الدولة الأولى"
+            },
+            {
+                q: "في أي عام هجري تمت اتفاقية التأسيس والتحالف التاريخي بين الإمام محمد بن سعود والشيخ محمد بن عبدالوهاب بالدرعية؟",
+                options: ["1157 هـ (1744 م)", "1139 هـ (1727 م)", "1233 هـ (1818 م)", "1050 هـ (1640 م)"],
+                correct: 0,
+                cat: "أحداث تاريخية"
+            },
+            {
+                q: "ما سبب تسمية 'الدرعية' بهذا الاسم؟",
+                options: ["نسبة إلى الدروع التي يرتديها الفرسان", "نسبة إلى عشيرة الدروع من بني حنيفة", "نسبة إلى موقعها بين جبلين كالدرع", "نسبة إلى وادي حنيفة"],
+                correct: 1,
+                cat: "تأسيس الدرعية"
+            },
+            {
+                q: "ما الحي الذي كان مركزاً علمياً ودينياً واستقر فيه الشيخ محمد بن عبدالوهاب وعقد فيه دروسه العلمية؟",
+                options: ["حي الطريف", "حي البجيري", "حي سمحان", "حي الطرفية"],
+                correct: 1,
+                cat: "العمارة والآثار"
+            },
+            {
+                q: "من الإمام الذي أُطلق عليه لقب 'كبير أئمة الدولة السعودية الأولى' وعُرِف بعهد التوسع الشامل والعدل؟",
+                options: ["الإمام عبدالعزيز بن محمد بن سعود", "الإمام سعود بن عبدالعزيز", "الإمام عبدالله بن سعود", "الإمام محمد بن سعود"],
+                correct: 0,
+                cat: "أئمة الدولة"
+            },
+            {
+                q: "اتسم عهد الإمام سعود بن عبدالعزيز بن محمد (توفي 1229هـ) بـ:",
+                options: ["العصر الذهبي والاتساع الأقصى للدولة", "بداية وضع اللبنات الأولى فقط", "سقوط الدرعية", "الانتقال إلى الرياض"],
+                correct: 0,
+                cat: "أئمة الدولة"
+            },
+            {
+                q: "ما اسم الوادي الشهير الذي تقع على ضفافه إمارة الدرعية وتعتبر خصبة بسببه؟",
+                options: ["وادي الرمة", "وادي حنيفة", "وادي الدواسر", "وادي تثليث"],
+                correct: 1,
+                cat: "جغرافية الدرعية"
+            },
+            {
+                q: "الأسلوب المعماري الأصيل الذي بنيت به أسوار وقصور الدرعية القديمة هو المعمار:",
+                options: ["النجدي الطيني", "الحجازي الرواشين", "العثماني الحجري", "الأندلسي"],
+                correct: 0,
+                cat: "الهوية النجدية"
+            },
+            {
+                q: "من هو قائد الحملة العثمانية/الإبراهيمية التي حاصرت الدرعية عام 1233هـ (1818م)؟",
+                options: ["طوسون باشا", "إبراهيم باشا", "أحمد طوسون", "فخري باشا"],
+                correct: 1,
+                cat: "معارك الدفاع"
+            },
+            {
+                q: "من هو آخر أئمة الدولة السعودية الأولى الذي استُبسل في الدفاع عن الدرعية خلال الحصار الشهير؟",
+                options: ["الإمام عبدالله بن سعود", "الإمام سعود الكبير", "الإمام فيصل بن تركي", "الإمام عبدالرحمن بن فيصل"],
+                correct: 0,
+                cat: "معارك الدفاع"
+            },
+            {
+                q: "كم استمر حصار القوات الغازية للدرعية قبل استبسال أهلها وسقوطها عام 1233هـ؟",
+                options: ["حوالي 6 أشهر", "شهر واحد", "سنة كاملة", "3 أسابيع"],
+                correct: 0,
+                cat: "معارك الدفاع"
+            },
+            {
+                q: "ما هي المعركة الفاصلة والشهيرة التي حدثت قرب الدرعية في بدايات توحيد المنطقة؟",
+                options: ["معركة الحائر", "معركة معتلا", "معركة الرقية والعدوة", "معركة بسل"],
+                correct: 2,
+                cat: "معارك تاريخية"
+            },
+            {
+                q: "المكان التاريخي الذي التقى فيه مانع المريدي بابن عمه ابن درع لاستلام أرضي المليبد وغصيبة هو:",
+                options: ["حجر اليمامة", "الأحساء", "نجران", "مكة المكرمة"],
+                correct: 0,
+                cat: "تأسيس الدرعية"
+            },
+            {
+                q: "ما هي العاصمة الأولى للدولة السعودية التي انطلقت منها وحدة الجزيرة العربية؟",
+                options: ["الرياض", "الدرعية", "جدة", "حائل"],
+                correct: 1,
+                cat: "تاريخ السعودية"
+            },
+            {
+                q: "تتميز الأبواب النجدية القديمة في الدرعية بـ:",
+                options: ["النقوش الحفرية والمثلثات الملونة على خشب الأثل", "الزجاج الملون فقط", "الألواح الحديدية الثقيلة", "الرخام المحفور"],
+                correct: 0,
+                cat: "الهوية النجدية"
+            },
+            {
+                q: "قصور حي الطريف الشهيرة بنيت باستخدام خامات طبيعية من البيئة المحلية هي:",
+                options: ["اللبن (الطين) وجذوع النخيل وخشب الأثل", "الجرانيت المسلح", "الرخام الأبيض", "الحجر الجيري الملحوم"],
+                correct: 0,
+                cat: "العمارة والآثار"
+            },
+            {
+                q: "ما هي الوثيقة التاريخية والأمنية التي أرست الاستقرار التجاري في نجد إبان عهد الإمام محمد بن سعود؟",
+                options: ["تأمين طرق الحج والتجارة وتنظيم الزكاة", "معاهدة لندن", "حلف الفضول", "اتفاقية العقير"],
+                correct: 0,
+                cat: "أحداث تاريخية"
+            },
+            {
+                q: "أي من أحياء الدرعية التالية يُعد أول منطقة سكنها مانع المريدي عند قدومه؟",
+                options: ["حي غصيبة", "حي الطريف", "حي البجيري", "حي المريسي"],
+                correct: 0,
+                cat: "تأسيس الدرعية"
+            },
+            {
+                q: "ما اسم الشعار الثقافي والتراثي الوطني الذي يحتفي بيت التأسيس وإمارة الدرعية سنوياً؟",
+                options: ["يوم التأسيس (22 فبراير)", "يوم العلم (11 مارس)", "اليوم الوطني (23 سبتمبر)", "يوم الدرعية"],
+                correct: 0,
+                cat: "تاريخ السعودية"
+            },
+            {
+                q: "من أبرز المعالم المعمارية في حي الطريف ب الدرعية والذي يعتبر مقراً للحكم ومسجداً جامعاً:",
+                options: ["قصر سلوى", "قصر المربع", "قصر المصمك", "قصر شبرة"],
+                correct: 0,
+                cat: "العمارة والآثار"
+            },
+            {
+                q: "اتسمت السياسة المالية والدعوية في الدولة السعودية الأولى بالدرعية بـ:",
+                options: ["بيت المال والتطبيق الدقيق للشريعة والإيعاز بالتعليم", "الضرائب المرتفعة", "الاعتماد على القروض الخارجي", "إلغاء التعليم"],
+                correct: 0,
+                cat: "تاريخ السعودية"
+            },
+            {
+                q: "مشروع 'بوابة الدرعية' الحالي يهدف إلى:",
+                options: ["تحويل الدرعية إلى وجهة سياحية وثقافية عالمية تحفيزاً لتاريخها", "هدم الآثار القديمة", "بناء مصانع حديثة", "تحويلها لمنطقة زراعية مغلقة"],
+                correct: 0,
+                cat: "رؤية المملكة"
+            }
+        ];
+
+
+        /* =========================================================================
+           2. GLOBAL STATE & DUAL-LAYER COMMUNICATION (PeerJS WebRTC + BroadcastChannel)
+           ========================================================================= */
+        const LOCAL_CHANNEL_NAME = "diriyah_quiz_channel";
+        let broadcastChannel = null;
+
+        // PeerJS P2P Networking State
+        let peer = null;
+        let peerConnectionsMap = {}; // playerConnId -> peerConnection object (for Host)
+        let hostPeerConn = null; // (for Player)
+
+        // State Variables
+        let currentRole = 'select'; // 'host', 'player', 'select'
+        let gamePin = '';
+        let currentQuestionIdx = 0;
+        let timerInterval = null;
+        let timerSeconds = 30;
+
+        // Player Data
+        let myPlayerInfo = {
+            id: '',
+            name: '',
+            team: '',
+            score: 0,
+            hasAnsweredCurrent: false
+        };
+
+        // Host Aggregated State
+        let connectedPlayersMap = {}; // id -> {id, name, team, score, lastAnswerCorrect}
+        let questionAnswerCounts = 0;
+
+        // Sound System (Web Audio API)
+        let audioCtx = null;
+        let isSoundMuted = false;
+
+        /* =========================================================================
+           3. INITIALIZATION & ROUTING ON LOAD (Strict Separation)
+           ========================================================================= */
+        window.addEventListener('DOMContentLoaded', () => {
+            initBroadcastChannel();
+
+            // Check URL Params for direct mobile/player join
+            const urlParams = new URLSearchParams(window.location.search);
+            const roleParam = urlParams.get('mode') || urlParams.get('role');
+            const pinParam = urlParams.get('pin');
+
+            if (pinParam) {
+                document.getElementById('inputPin').value = pinParam;
+            }
+
+            // Direct Separation: If opened from QR Code / Mobile URL with mode=player or pinParam -> Force Player Mode directly!
+            if (roleParam === 'player' || pinParam) {
+                // Hide header switch button on direct mobile join to prevent accidental switching
+                document.getElementById('switchRoleBtn').classList.add('hidden');
+                initPlayerMode();
+            } else if (roleParam === 'host') {
+                initHostMode();
+            } else {
+                showSection('roleSelectSection');
+            }
+        });
+
+        function initBroadcastChannel() {
+            if ('BroadcastChannel' in window) {
+                broadcastChannel = new BroadcastChannel(LOCAL_CHANNEL_NAME);
+                broadcastChannel.onmessage = (event) => handleIncomingMessage(event.data);
+            }
+
+            // Fallback storage listener for same-device cross-tab testing
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'diriyah_sync_msg' && e.newValue) {
+                    try {
+                        const data = JSON.parse(e.newValue);
+                        handleIncomingMessage(data);
+                    } catch (err) {}
+                }
+            });
+        }
+
+        function sendMessage(data) {
+            // 1. Send via PeerJS Cloud P2P
+            if (currentRole === 'host') {
+                Object.values(peerConnectionsMap).forEach(conn => {
+                    if (conn && conn.open) conn.send(data);
+                });
+            } else if (currentRole === 'player' && hostPeerConn && hostPeerConn.open) {
+                hostPeerConn.send(data);
+            }
+
+            // 2. Broadcast via Local BroadcastChannel (fallback for same device)
+            if (broadcastChannel) {
+                broadcastChannel.postMessage(data);
+            }
+            localStorage.setItem('diriyah_sync_msg', JSON.stringify({ ...data, _ts: Date.now() }));
+        }
+
+        /* =========================================================================
+           4. AUDIO EFFECTS ENGINE (Web Audio API)
+           ========================================================================= */
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (AudioContext) audioCtx = new AudioContext();
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function toggleAudio() {
+            isSoundMuted = !isSoundMuted;
+            const icon = document.getElementById('soundIcon');
+            if (isSoundMuted) {
+                icon.className = 'fa-solid fa-volume-xmark text-red-400';
+            } else {
+                icon.className = 'fa-solid fa-volume-high text-najd-sand';
+                playBeep(600, 0.1);
+            }
+        }
+
+        function playBeep(freq = 440, duration = 0.1, type = 'sine') {
+            if (isSoundMuted) return;
+            initAudio();
+            if (!audioCtx) return;
+
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch (e) {}
+        }
+
+        function playFanfareSound() {
+            if (isSoundMuted) return;
+            const notes = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99];
+            notes.forEach((freq, idx) => {
+                setTimeout(() => playBeep(freq, 0.25, 'triangle'), idx * 100);
+            });
+        }
+
+        function playCorrectSound() {
+            playBeep(523.25, 0.12, 'sine');
+            setTimeout(() => playBeep(659.25, 0.25, 'sine'), 120);
+        }
+
+        function playWrongSound() {
+            playBeep(220, 0.2, 'sawtooth');
+            setTimeout(() => playBeep(180, 0.3, 'sawtooth'), 180);
+        }
+
+        /* =========================================================================
+           5. VIEW SWITCHING & ROLE CONTROLS
+           ========================================================================= */
+        function showSection(sectionId) {
+            const sections = [
+                'roleSelectSection',
+                'hostLobbySection',
+                'playerJoinSection',
+                'hostQuestionSection',
+                'playerAnswerSection',
+                'leaderboardSection',
+                'finalVictorySection'
+            ];
+            sections.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden');
+            });
+            const target = document.getElementById(sectionId);
+            if (target) target.classList.remove('hidden');
+        }
+
+        function switchRoleModal() {
+            document.getElementById('roleModal').classList.remove('hidden');
+        }
+        function closeRoleModal() {
+            document.getElementById('roleModal').classList.add('hidden');
+        }
+        function confirmSwitchRole() {
+            closeRoleModal();
+            currentRole = 'select';
+            document.getElementById('roleBadge').classList.add('hidden');
+            // Reset URL params without reload
+            window.history.pushState({}, document.title, window.location.pathname);
+            showSection('roleSelectSection');
+        }
+
+        /* =========================================================================
+           6. HOST MODE LOGIC & LOBBY (PeerJS Host Server Setup)
+           ========================================================================= */
+        function initHostMode() {
+            initAudio();
+            currentRole = 'host';
+            document.getElementById('roleBadge').classList.remove('hidden');
+            document.getElementById('roleText').innerText = 'نمط العرض (Host)';
+
+            // Generate 6-digit random PIN
+            gamePin = Math.floor(100000 + Math.random() * 900000).toString();
+            document.getElementById('hostPinDisplay').innerText = gamePin;
+
+            // Initialize PeerJS Host with Room ID = diriyah_quiz_PIN
+            const hostRoomId = `diriyah_quiz_${gamePin}`;
+            if (peer) peer.destroy();
+
+            try {
+                peer = new Peer(hostRoomId);
+
+                peer.on('open', (id) => {
+                    document.getElementById('networkStatusText').innerHTML = `
+                        <i class="fa-solid fa-signal text-green-400"></i> متصل بالسحاب - الرمز جاهز للانضمام
+                    `;
+                });
+
+                peer.on('connection', (conn) => {
+                    peerConnectionsMap[conn.peer] = conn;
+
+                    conn.on('data', (data) => {
+                        handleIncomingMessage(data);
+                    });
+
+                    conn.on('close', () => {
+                        delete peerConnectionsMap[conn.peer];
+                    });
+                });
+
+                peer.on('error', (err) => {
+                    console.warn("PeerJS Host fallback:", err);
+                    document.getElementById('networkStatusText').innerText = "وضع الشبكة المحلية (Broadcast Channel)";
+                });
+            } catch (e) {
+                console.warn("PeerJS not loaded, relying on local sync.");
+            }
+
+            // Generate QR Code dynamically targeting mobile player page directly with parameters
+            const joinUrl = `${window.location.origin}${window.location.pathname}?mode=player&pin=${gamePin}`;
+            const qrContainer = document.getElementById('qrcodeCanvas');
+            qrContainer.innerHTML = '';
+            new QRCode(qrContainer, {
+                text: joinUrl,
+                width: 130,
+                height: 130,
+                colorDark : "#1A120D",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+
+            connectedPlayersMap = {};
+            updateHostLobbyUI();
+            showSection('hostLobbySection');
+        }
+
+        function updateHostLobbyUI() {
+            const playersList = Object.values(connectedPlayersMap);
+            document.getElementById('connectedCount').innerText = playersList.length;
+
+            const listEl = document.getElementById('lobbyPlayersList');
+            if (playersList.length === 0) {
+                listEl.innerHTML = `
+                    <div class="col-span-full flex flex-col items-center justify-center py-8 text-najd-sand/40 text-center">
+                        <i class="fa-solid fa-spinner fa-spin text-3xl text-najd-gold mb-2"></i>
+                        <p class="text-sm">في انتظار انضمام المشاركين عبر الجوال (الرمز: ${gamePin})...</p>
+                    </div>`;
+                return;
+            }
+
+            listEl.innerHTML = playersList.map(p => `
+                <div class="bg-najd-clayBg border border-najd-gold/40 p-2.5 rounded-xl flex items-center gap-2.5 shadow transition-all">
+                    <div class="w-8 h-8 rounded-full bg-najd-gold/20 text-najd-gold flex items-center justify-center font-bold text-xs border border-najd-gold">
+                        ${p.name.charAt(0)}
+                    </div>
+                    <div class="truncate text-right">
+                        <div class="font-bold text-xs text-najd-sand truncate">${p.name}</div>
+                        <div class="text-[10px] text-najd-gold/80 truncate">${p.team}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function startHostQuiz() {
+            if (Object.keys(connectedPlayersMap).length === 0) {
+                // Allow demo solo testing if no external players joined
+                connectedPlayersMap['demo_1'] = { id: 'demo_1', name: 'فارس الدرعية (تجريبي)', team: 'فرسان الطريف', score: 0 };
+            }
+            currentQuestionIdx = 0;
+            broadcastQuestionToPlayers();
+            renderHostQuestionView();
+            playBeep(440, 0.2);
+        }
+
+        function renderHostQuestionView() {
+            showSection('hostQuestionSection');
+            const q = QUIZ_QUESTIONS[currentQuestionIdx];
+
+            document.getElementById('questionNumBadge').innerText = `السؤال ${currentQuestionIdx + 1} من ${QUIZ_QUESTIONS.length}`;
+            document.getElementById('questionCategoryBadge').innerText = q.cat;
+            document.getElementById('hostQuestionText').innerText = q.q;
+
+            // Render options grid for Host
+            const grid = document.getElementById('hostOptionsGrid');
+            const colors = ['border-blue-500/50', 'border-amber-500/50', 'border-emerald-500/50', 'border-purple-500/50'];
+            const icons = ['A', 'B', 'C', 'D'];
+
+            grid.innerHTML = q.options.map((opt, idx) => `
+                <div class="btn-option ${colors[idx]} p-4 rounded-xl flex items-center gap-3 text-right">
+                    <span class="w-8 h-8 rounded-lg bg-najd-gold/20 text-najd-gold font-bold flex items-center justify-center text-sm border border-najd-gold/40">
+                        ${icons[idx]}
+                    </span>
+                    <span class="text-sm font-semibold text-najd-sand">${opt}</span>
+                </div>
+            `).join('');
+
+            // Reset counts and start timer
+            questionAnswerCounts = 0;
+            document.getElementById('answersSubmittedCount').innerText = '0';
+            startTimer(30);
+        }
+
+        function startTimer(seconds) {
+            clearInterval(timerInterval);
+            timerSeconds = seconds;
+            document.getElementById('timerText').innerText = timerSeconds;
+
+            timerInterval = setInterval(() => {
+                timerSeconds--;
+                document.getElementById('timerText').innerText = timerSeconds;
+                if (timerSeconds <= 5 && timerSeconds > 0) {
+                    playBeep(880, 0.08);
+                }
+                if (timerSeconds <= 0) {
+                    clearInterval(timerInterval);
+                    finishQuestionRound();
+                }
+            }, 1000);
+        }
+
+        function skipQuestionTimer() {
+            clearInterval(timerInterval);
+            finishQuestionRound();
+        }
+
+        function finishQuestionRound() {
+            // Signal players that question ended
+            sendMessage({
+                type: 'QUESTION_ENDED',
+                correctOption: QUIZ_QUESTIONS[currentQuestionIdx].correct
+            });
+
+            // Show Leaderboard after 1 second
+            setTimeout(() => {
+                renderLeaderboardView();
+            }, 1000);
+        }
+
+
+        /* =========================================================================
+           7. PLAYER MODE LOGIC (Dedicated Mobile Experience)
+           ========================================================================= */
+        function initPlayerMode() {
+            initAudio();
+            currentRole = 'player';
+            document.getElementById('roleBadge').classList.remove('hidden');
+            document.getElementById('roleText').innerText = 'لاعب للجوال (Player)';
+            showSection('playerJoinSection');
+        }
+
+        function toggleCustomTeamInput(val) {
+            const customWrapper = document.getElementById('customTeamWrapper');
+            const customInput = document.getElementById('inputCustomTeam');
+            if (val === '__NEW__') {
+                customWrapper.classList.remove('hidden');
+                customInput.required = true;
+                customInput.focus();
+            } else {
+                customWrapper.classList.add('hidden');
+                customInput.required = false;
+            }
+        }
+
+        function confirmNewTeamCreation() {
+            const customInput = document.getElementById('inputCustomTeam');
+            const teamName = customInput.value.trim();
+            if (!teamName) return;
+
+            const selectEl = document.getElementById('selectTeam');
+            
+            // Check if option already exists
+            let existingOption = Array.from(selectEl.options).find(opt => opt.value === teamName);
+            if (!existingOption) {
+                const newOpt = document.createElement('option');
+                newOpt.value = teamName;
+                newOpt.textContent = `فريق ${teamName}`;
+                // Insert before the __NEW__ option
+                selectEl.insertBefore(newOpt, selectEl.options[selectEl.options.length - 1]);
+                existingOption = newOpt;
+            }
+
+            selectEl.value = teamName;
+            toggleCustomTeamInput(teamName);
+            playBeep(650, 0.1);
+        }
+
+        function handlePlayerJoin(e) {
+            e.preventDefault();
+            const pinVal = document.getElementById('inputPin').value.trim();
+            const nameVal = document.getElementById('inputPlayerName').value.trim();
+            let selectEl = document.getElementById('selectTeam');
+            let teamVal = selectEl.value;
+
+            if (teamVal === '__NEW__') {
+                const customVal = document.getElementById('inputCustomTeam').value.trim();
+                if (customVal) {
+                    teamVal = customVal;
+                    confirmNewTeamCreation();
+                } else {
+                    teamVal = 'فرسان الطريف';
+                }
+            }
+
+            myPlayerInfo.id = 'player_' + Math.random().toString(36).substr(2, 9);
+            myPlayerInfo.name = nameVal;
+            myPlayerInfo.team = teamVal;
+            myPlayerInfo.score = 0;
+            myPlayerInfo.hasAnsweredCurrent = false;
+
+            const submitBtn = document.getElementById('joinSubmitBtn');
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري الاتصال بالمضيف...`;
+            submitBtn.disabled = true;
+
+            // Connect to Host via PeerJS
+            const targetHostRoomId = `diriyah_quiz_${pinVal}`;
+            if (peer) peer.destroy();
+
+            try {
+                peer = new Peer();
+                peer.on('open', () => {
+                    hostPeerConn = peer.connect(targetHostRoomId);
+
+                    hostPeerConn.on('open', () => {
+                        // Send Join payload over P2P
+                        sendMessage({
+                            type: 'PLAYER_JOIN',
+                            pin: pinVal,
+                            player: myPlayerInfo
+                        });
+                        completePlayerLogin(nameVal, teamVal);
+                    });
+
+                    hostPeerConn.on('data', (data) => {
+                        handleIncomingMessage(data);
+                    });
+
+                    hostPeerConn.on('error', (err) => {
+                        console.warn("Peer connection error, falling back:", err);
+                        completePlayerLogin(nameVal, teamVal);
+                    });
+                });
+
+                peer.on('error', (err) => {
+                    console.warn("Peer client fallback to broadcast:", err);
+                    completePlayerLogin(nameVal, teamVal);
+                });
+            } catch (err) {
+                completePlayerLogin(nameVal, teamVal);
+            }
+
+            // Fallback safety timeout if PeerJS server delays
+            setTimeout(() => {
+                if (document.getElementById('playerJoinSection').classList.contains('hidden') === false) {
+                    completePlayerLogin(nameVal, teamVal);
+                }
+            }, 1200);
+        }
+
+        function completePlayerLogin(nameVal, teamVal) {
+            // Local fallback send
+            sendMessage({
+                type: 'PLAYER_JOIN',
+                pin: document.getElementById('inputPin').value.trim(),
+                player: myPlayerInfo
+            });
+
+            // Update local badge & UI
+            document.getElementById('playerBadgeName').innerText = nameVal;
+            document.getElementById('playerBadgeTeam').innerText = teamVal;
+            document.getElementById('playerBadgeScore').innerText = '0';
+
+            showSection('playerAnswerSection');
+            document.getElementById('playerQuestionPreview').innerText = "تم الانضمام بنجاح! بانتظار بدء السؤال الأول من شاشة المضيف...";
+            document.getElementById('playerOptionsContainer').innerHTML = `
+                <div class="text-center py-8 text-najd-gold">
+                    <i class="fa-solid fa-hourglass-half text-3xl animate-spin mb-3"></i>
+                    <p class="text-xs">استعد لإجابة الأسئلة التاريخية من شاشة جوالك...</p>
+                </div>
+            `;
+            playBeep(500, 0.15);
+        }
+
+        function submitPlayerAnswer(optionIndex) {
+            if (myPlayerInfo.hasAnsweredCurrent) return;
+            myPlayerInfo.hasAnsweredCurrent = true;
+
+            const selectedIdx = parseInt(optionIndex, 10);
+            myPlayerInfo.lastSelectedOption = selectedIdx;
+
+            // Disable buttons visual
+            const btns = document.querySelectorAll('.player-opt-btn');
+            btns.forEach((btn, idx) => {
+                btn.disabled = true;
+                if (idx === selectedIdx) {
+                    btn.classList.add('border-najd-gold', 'bg-najd-gold/30');
+                } else {
+                    btn.classList.add('opacity-40');
+                }
+            });
+
+            // Calculate score addition based on timer speed if host mode transmits timer, default 100 pts
+            const speedBonus = Math.max(10, timerSeconds * 3);
+            
+            // Notify Host
+            sendMessage({
+                type: 'PLAYER_SUBMIT_ANSWER',
+                playerId: myPlayerInfo.id,
+                optionIndex: selectedIdx,
+                speedBonus: speedBonus
+            });
+
+            const fb = document.getElementById('playerFeedbackBox');
+            fb.className = 'p-3 rounded-xl text-center font-bold text-xs bg-najd-mud/60 text-najd-gold border border-najd-gold/40';
+            fb.innerText = 'تم تسجيل إجابتك بنجاح! بانتظار إعلان النتيجة على الشاشة الكبيرة...';
+            fb.classList.remove('hidden');
+            playBeep(600, 0.1);
+        }
+
+        function finishQuestionRound() {
+            const correctOptIdx = parseInt(QUIZ_QUESTIONS[currentQuestionIdx].correct, 10);
+
+            // Signal players that question ended with correct answer payload
+            sendMessage({
+                type: 'QUESTION_ENDED',
+                questionIndex: currentQuestionIdx,
+                correctOption: correctOptIdx,
+                playersState: connectedPlayersMap
+            });
+
+            // Show Leaderboard after 1 second
+            setTimeout(() => {
+                renderLeaderboardView();
+            }, 1000);
+        }
+            });
+
+            // Calculate score addition based on timer speed if host mode transmits timer, default 100 pts
+            const speedBonus = Math.max(10, timerSeconds * 3);
+            
+            // Notify Host
+            sendMessage({
+                type: 'PLAYER_SUBMIT_ANSWER',
+                playerId: myPlayerInfo.id,
+                optionIndex: optionIndex,
+                speedBonus: speedBonus
+            });
+
+            const fb = document.getElementById('playerFeedbackBox');
+            fb.className = 'p-3 rounded-xl text-center font-bold text-xs bg-najd-mud/60 text-najd-gold border border-najd-gold/40';
+            fb.innerText = 'تم تسجيل إجابتك بنجاح! بانتظار إعلان النتيجة على الشاشة الكبيرة...';
+            fb.classList.remove('hidden');
+            playBeep(600, 0.1);
+        }
+
+
+        /* =========================================================================
+           8. FLIP ANIMATION LEADERBOARD TECHNIQUE
+           ========================================================================= */
+        function renderLeaderboardView() {
+            showSection('leaderboardSection');
+            playFanfareSound();
+
+            const container = document.getElementById('leaderboardList');
+            const currentQ = QUIZ_QUESTIONS[currentQuestionIdx];
+
+            // 1. Group / Aggregate Scores by Players or Teams
+            const sortedPlayers = Object.values(connectedPlayersMap).sort((a, b) => b.score - a.score);
+
+            // 2. Perform FLIP Animation Algorithm
+            // FIRST: Capture initial DOM rects if re-rendering
+            const firstPositions = {};
+            container.querySelectorAll('.leaderboard-item').forEach(el => {
+                const id = el.getAttribute('data-id');
+                if (id) firstPositions[id] = el.getBoundingClientRect();
+            });
+
+            // Re-render DOM elements in new order
+            container.innerHTML = sortedPlayers.map((p, rank) => {
+                const isTop3 = rank < 3;
+                const badgeColor = rank === 0 ? 'bg-amber-400 text-black' : rank === 1 ? 'bg-gray-300 text-black' : rank === 2 ? 'bg-amber-700 text-white' : 'bg-najd-mud text-najd-sand';
+                
+                return `
+                <div data-id="${p.id}" class="leaderboard-item najdi-card p-4 rounded-xl flex items-center justify-between border ${isTop3 ? 'border-najd-gold' : 'border-najd-mud'} shadow-md">
+                    <div class="flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-full ${badgeColor} font-black text-sm flex items-center justify-center">
+                            ${rank + 1}
+                        </span>
+                        <div class="text-right">
+                            <div class="font-bold text-sm text-najd-sand flex items-center gap-2">
+                                <span>${p.name}</span>
+                                ${p.lastAnswerCorrect ? '<i class="fa-solid fa-circle-check text-green-400 text-xs" title="إجابة صحيحة"></i>' : '<i class="fa-solid fa-circle-xmark text-red-400 text-xs" title="إجابة خاطئة"></i>'}
+                            </div>
+                            <div class="text-xs text-najd-gold/80">${p.team}</div>
+                        </div>
+                    </div>
+                    <div class="text-left">
+                        <span class="text-xl font-extrabold text-green-400 font-mono">${p.score}</span>
+                        <span class="text-[10px] text-najd-sand/60 block">نقطة</span>
+                    </div>
+                </div>
+            `;
+            }).join('');
+
+            // LAST, INVERT, PLAY
+            requestAnimationFrame(() => {
+                container.querySelectorAll('.leaderboard-item').forEach(el => {
+                    const id = el.getAttribute('data-id');
+                    const firstRect = firstPositions[id];
+                    if (firstRect) {
+                        const lastRect = el.getBoundingClientRect();
+                        const deltaY = firstRect.top - lastRect.top;
+
+                        if (deltaY !== 0) {
+                            // INVERT: Immediately transform element back to starting position without animation
+                            el.style.transform = `translateY(${deltaY}px)`;
+                            el.style.transition = 'none';
+
+                            // PLAY: Animate to final position smoothly
+                            requestAnimationFrame(() => {
+                                el.style.transition = 'transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                                el.style.transform = '';
+                            });
+                        }
+                    }
+                });
+            });
+
+            // Update Next button label
+            const nextBtn = document.getElementById('nextQuestionBtn');
+            if (currentQuestionIdx >= QUIZ_QUESTIONS.length - 1) {
+                nextBtn.innerHTML = `<span>عرض النتائج النهائية والتتويج</span> <i class="fa-solid fa-trophy text-amber-400"></i>`;
+            } else {
+                nextBtn.innerHTML = `<span>السؤال التالي (${currentQuestionIdx + 2}/${QUIZ_QUESTIONS.length})</span> <i class="fa-solid fa-arrow-left"></i>`;
+            }
+        }
+
+        function nextQuestionOrFinish() {
+            currentQuestionIdx++;
+            if (currentQuestionIdx < QUIZ_QUESTIONS.length) {
+                broadcastQuestionToPlayers();
+                renderHostQuestionView();
+            } else {
+                renderFinalVictoryView();
+            }
+        }
+
+        function renderFinalVictoryView() {
+            showSection('finalVictorySection');
+            playFanfareSound();
+            confetti({
+                particleCount: 120,
+                spread: 80,
+                origin: { y: 0.6 }
+            });
+
+            const sorted = Object.values(connectedPlayersMap).sort((a, b) => b.score - a.score);
+
+            // Populate Podium
+            if (sorted[0]) {
+                document.getElementById('podium1Name').innerText = `${sorted[0].name} (${sorted[0].team})`;
+                document.getElementById('podium1Score').innerText = `${sorted[0].score} نقطة`;
+            }
+            if (sorted[1]) {
+                document.getElementById('podium2Name').innerText = `${sorted[1].name} (${sorted[1].team})`;
+                document.getElementById('podium2Score').innerText = `${sorted[1].score} نقطة`;
+            }
+            if (sorted[2]) {
+                document.getElementById('podium3Name').innerText = `${sorted[2].name} (${sorted[2].team})`;
+                document.getElementById('podium3Score').innerText = `${sorted[2].score} نقطة`;
+            }
+        }
+
+        function restartGame() {
+            if (currentRole === 'host') {
+                initHostMode();
+            } else {
+                initPlayerMode();
+            }
+        }
+
+
+        /* =========================================================================
+           9. CENTRAL COMMUNICATION MESSAGE DISPATCHER
+           ========================================================================= */
+        function broadcastQuestionToPlayers() {
+            const q = QUIZ_QUESTIONS[currentQuestionIdx];
+            sendMessage({
+                type: 'NEW_QUESTION',
+                questionIndex: currentQuestionIdx,
+                totalQuestions: QUIZ_QUESTIONS.length,
+                questionText: q.q,
+                category: q.cat,
+                options: q.options
+            });
+        }
+
+        function handleIncomingMessage(data) {
+            if (!data || !data.type) return;
+
+            // ---- HOST RECEIVES PLAYER MESSAGES ----
+            if (currentRole === 'host') {
+                if (data.type === 'PLAYER_JOIN') {
+                    connectedPlayersMap[data.player.id] = {
+                        id: data.player.id,
+                        name: data.player.name,
+                        team: data.player.team,
+                        score: 0,
+                        lastAnswerCorrect: false
+                    };
+                    updateHostLobbyUI();
+                    playBeep(700, 0.08);
+                }
+
+                if (data.type === 'PLAYER_SUBMIT_ANSWER') {
+                    const p = connectedPlayersMap[data.playerId];
+                    if (p) {
+                        questionAnswerCounts++;
+                        document.getElementById('answersSubmittedCount').innerText = questionAnswerCounts;
+
+                        const q = QUIZ_QUESTIONS[currentQuestionIdx];
+                        const correctIdx = parseInt(q.correct, 10);
+                        const playerAnswerIdx = parseInt(data.optionIndex, 10);
+                        
+                        const isCorrect = (playerAnswerIdx === correctIdx);
+                        p.lastAnswerCorrect = isCorrect;
+
+                        if (isCorrect) {
+                            p.score += 100 + (data.speedBonus || 0);
+                        }
+                    }
+                }
+            }
+
+            // ---- PLAYER RECEIVES HOST MESSAGES ----
+            if (currentRole === 'player') {
+                if (data.type === 'NEW_QUESTION') {
+                    myPlayerInfo.hasAnsweredCurrent = false;
+                    myPlayerInfo.lastSelectedOption = null;
+                    showSection('playerAnswerSection');
+
+                    document.getElementById('playerQuestionPreview').innerText = `[${data.category}] ${data.questionText}`;
+                    document.getElementById('playerFeedbackBox').classList.add('hidden');
+
+                    const container = document.getElementById('playerOptionsContainer');
+                    const colors = ['border-blue-500/60', 'border-amber-500/60', 'border-emerald-500/60', 'border-purple-500/60'];
+                    const icons = ['أ', 'ب', 'ج', 'د'];
+
+                    container.innerHTML = data.options.map((opt, idx) => `
+                        <button onclick="submitPlayerAnswer(${idx})" class="player-opt-btn btn-option ${colors[idx]} p-3.5 rounded-xl w-full flex items-center gap-3 text-right text-najd-sand font-bold text-sm">
+                            <span class="w-7 h-7 rounded-lg bg-najd-gold/20 text-najd-gold flex items-center justify-center text-xs border border-najd-gold/40">
+                                ${icons[idx]}
+                            </span>
+                            <span class="flex-1">${opt}</span>
+                        </button>
+                    `).join('');
+                }
+
+                if (data.type === 'QUESTION_ENDED') {
+                    const fb = document.getElementById('playerFeedbackBox');
+                    fb.classList.remove('hidden');
+
+                    const correctOptIdx = parseInt(data.correctOption, 10);
+                    const mySelectedIdx = parseInt(myPlayerInfo.lastSelectedOption, 10);
+
+                    // Sync updated score if host sent aggregated players state
+                    if (data.playersState && data.playersState[myPlayerInfo.id]) {
+                        myPlayerInfo.score = data.playersState[myPlayerInfo.id].score;
+                        document.getElementById('playerBadgeScore').innerText = myPlayerInfo.score;
+                    }
+
+                    // Strict integer index equality check
+                    if (!isNaN(mySelectedIdx) && mySelectedIdx === correctOptIdx) {
+                        fb.className = 'p-3 rounded-xl text-center font-bold text-xs bg-green-900/80 text-green-200 border border-green-500';
+                        fb.innerText = 'إجابة صحيحة! أحسنت يا بطل الدرعية 👏';
+                        playCorrectSound();
+                    } else {
+                        fb.className = 'p-3 rounded-xl text-center font-bold text-xs bg-red-900/80 text-red-200 border border-red-500';
+                        fb.innerText = 'إجابة خاطئة! حظاً أفر في السؤال القادم 🗡️';
+                        playWrongSound();
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
